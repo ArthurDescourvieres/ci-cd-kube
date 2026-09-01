@@ -81,7 +81,7 @@ L'app ne rapporte aucun point. Elle doit juste être **testable** et **buildable
 - [x] **2.6 — Build local des deux targets** 🖥️
       Comparer les tailles avec `docker images` : l'écart dev/prod est un
       argument de soutenance.
-- [ ] **2.7 — `compose.yaml`** ✍️
+- [x] **2.7 — `compose.yaml`** ✍️
       Confort local uniquement, hors périmètre noté. Court.
 
 ---
