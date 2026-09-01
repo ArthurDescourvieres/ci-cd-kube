@@ -219,6 +219,15 @@ tag v*.*.* ─────┘                                              │
 
 ### Git
 - Branche par défaut : `main`.
+- **Stratégie de branches, en deux temps :**
+  - **Lots 1 et 2** (app, tests, Docker) : commits directs sur `main`. Le
+    workflow n'existe pas encore — une branche ne déclencherait rien et
+    n'apporterait que de la cérémonie.
+  - **À partir du lot 3** (une fois `ci-cd.yml` en place) : une branche
+    `feat/…` par étape, PR vers `main`. Le job `test` se déclenchera aussi sur
+    `pull_request`, donc la branche devient utile : elle fait tourner les tests
+    sans rien builder ni déployer. Les jobs `build` et `deploy`, eux, restent
+    réservés à `main` et aux tags — voir la section sécurité du runner.
 - Tags de release : `vX.Y.Z` (SemVer) → déclenchent le chemin **production**.
 - Commits : conventional commits (`feat:`, `fix:`, `ci:`, `docs:`, `chore:`).
 - **Ne jamais ajouter `Co-Authored-By`** ni auto-référence dans les messages.
