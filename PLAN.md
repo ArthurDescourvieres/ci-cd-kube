@@ -2,7 +2,8 @@
 
 > Règle du jeu : voir [CLAUDE.md](CLAUDE.md) § « Mode de travail ».
 > **Toi** tu tapes tout ce qui est marqué ✍️. **Claude** ne génère que le 🤖.
-> Une étape n'est finie que quand tu sais répondre à sa question de contrôle.
+> Une étape est finie quand le fichier marche. Les questions de contrôle sont là
+> pour repérer ce qu'il faudra réviser avant la soutenance, pas pour bloquer.
 
 **Deadline : vendredi 18 septembre 2026.** Aujourd'hui : 1er septembre.
 
@@ -37,7 +38,7 @@ fichier) et sa carte sur le board :
 
 L'app ne rapporte aucun point. Elle doit juste être **testable** et **buildable**.
 
-- [ ] **1.1 — `package.json` + install** 🤖
+- [x] **1.1 — `package.json` + install** 🤖
       Express + Vitest + Supertest. Claude écrit le fichier et t'explique les
       4 champs qui comptent : `type`, `scripts`, `dependencies` vs
       `devDependencies`.

@@ -31,9 +31,15 @@ Claude **n'écrit pas** les fichiers du projet. Claude **dicte**, l'utilisateur
 3. **Explication ligne par ligne** de ce qui n'est pas évident. Pas de jargon
    non défini (`needs:`, layer cache, probe, `ClusterIP`… → expliquer au
    premier usage).
-4. **1 à 3 questions de vérification.** Si l'utilisateur ne sait pas répondre :
-   réexpliquer autrement, **ne pas passer au bloc suivant**.
+4. **1 à 3 questions de vérification**, posées au moment de la dictée.
+   Si l'utilisateur ne sait pas répondre : donner la réponse et réexpliquer
+   autrement — ce sont des questions de cours, pas un examen.
 5. Attendre sa confirmation que c'est tapé avant de continuer.
+
+Une étape est **terminée quand le fichier est écrit et qu'il marche**. Les
+questions de contrôle ne bloquent ni la clôture de l'issue, ni le board : elles
+servent à repérer ce qu'il faudra réviser avant la soutenance. Si une réponse
+coince, on y revient — on ne gèle pas l'avancement pour autant.
 
 ### Ce que Claude a le droit d'écrire lui-même
 
@@ -299,7 +305,7 @@ tag v*.*.* ─────┘                                              │
 - **Ne pas écrire à la place de l'utilisateur** les fichiers `src/`, `tests/`,
   `Dockerfile`, `compose.yaml`, `.github/workflows/`, `k8s/` — voir la règle de
   la dictée en haut de ce fichier. C'est la règle la plus importante du projet.
-- Ne pas avancer sur l'étape suivante tant que l'utilisateur n'a pas répondu
-  aux questions de vérification de l'étape en cours.
+- Ne pas transformer les questions de contrôle en péage : on avance, et on
+  revient sur ce qui n'était pas clair.
 - Ne pas clore une étape sans avoir régénéré le burn down chart (voir le
   rituel en 5 gestes).
