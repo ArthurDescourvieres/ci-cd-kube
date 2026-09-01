@@ -12,6 +12,8 @@ et te l'explique · 🧑 manip que toi seul peux faire (navigateur, compte, inst
 Chaque étape a son **issue GitHub** (numérotées 1 à 41, même ordre que ce
 fichier) et sa carte sur le board :
 
+- Burn down : [`docs/burndown.png`](docs/burndown.png) — régénéré à chaque
+  étape close
 - Board : <https://github.com/users/ArthurDescourvieres/projects/11>
 - Issues : <https://github.com/ArthurDescourvieres/ci-cd-kube/issues>
 
@@ -22,10 +24,10 @@ fichier) et sa carte sur le board :
 - [x] **0.1 — Créer le repo GitHub public** `ci-cd-kube` 🖥️
       Public dès le départ (imposé par le sujet), sans README auto pour éviter
       un merge inutile au premier push.
-- [ ] **0.2 — `git init` local + `.gitignore`** 🤖
+- [x] **0.2 — `git init` local + `.gitignore`** 🤖
       `node_modules/`, `.env`, `*.kubeconfig`. Le repo est public : ce qui fuite
       est définitif (l'historique Git en garde la trace même après suppression).
-- [ ] **0.3 — Premier commit + push** 🖥️
+- [x] **0.3 — Premier commit + push** 🖥️
       On pousse `CLAUDE.md`, `SUJET.md`, `PLAN.md`, `.gitignore`. Rien d'autre.
       *Contrôle : pourquoi la branche s'appelle `main` et pas `master` ?*
 

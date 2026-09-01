@@ -85,6 +85,28 @@ corrige pas silencieusement à la place de l'utilisateur.
 Une brique à la fois, en suivant [PLAN.md](PLAN.md). Ne pas enchaîner trois
 étapes du plan dans une seule réponse, même si c'est plus rapide.
 
+### Clôture d'étape : le rituel en 5 gestes (obligatoire)
+
+Dès qu'une étape du plan est terminée, Claude enchaîne **dans le même échange**,
+sans qu'on le lui demande :
+
+1. `gh issue close <n> --reason completed` sur l'issue correspondante ;
+2. carte du board passée en **Fait** (`gh project item-edit`) ;
+3. case cochée dans [PLAN.md](PLAN.md) ;
+4. `python scripts/burndown.py` — régénère `docs/burndown.svg` **et**
+   `docs/burndown.png` ;
+5. commit + push de ce qui vient de changer.
+
+**Le burn down chart ne doit jamais être périmé.** Il est reconstruit à chaque
+fois à partir des issues fermées sur GitHub — la seule source de vérité. Si le
+chart et le board divergent, c'est le board qui a raison et le chart qu'il faut
+régénérer.
+
+Le chart est pondéré **en heures** (23 h au total, estimations de PLAN.md), pas
+en nombre d'issues : fermer une issue du lot 5 (Kubernetes) ne descend pas la
+courbe comme fermer une issue du lot 0. `scripts/burndown.py` est de l'outillage,
+pas du code noté : Claude l'écrit et le maintient lui-même (catégorie 🤖).
+
 ## Décisions actées
 
 | Sujet | Choix | Raison |
@@ -177,6 +199,11 @@ tag v*.*.* ─────┘                                              │
 ├── .dockerignore
 ├── compose.yaml           # confort local, hors périmètre noté
 ├── CLAUDE.md
+├── docs/
+│   ├── burndown.svg       # régénéré à chaque étape close
+│   └── burndown.png
+├── scripts/
+│   └── burndown.py        # outillage 🤖, lit les issues GitHub
 ├── PLAN.md               # plan d'avancement, une étape = une issue GitHub
 ├── SUJET.md
 └── README.md              # vitrine du rendu : schéma, choix, comment reproduire
@@ -274,3 +301,5 @@ tag v*.*.* ─────┘                                              │
   la dictée en haut de ce fichier. C'est la règle la plus importante du projet.
 - Ne pas avancer sur l'étape suivante tant que l'utilisateur n'a pas répondu
   aux questions de vérification de l'étape en cours.
+- Ne pas clore une étape sans avoir régénéré le burn down chart (voir le
+  rituel en 5 gestes).
