@@ -21,3 +21,6 @@ dist/
 Thumbs.db
 .idea/
 .vscode/
+
+# Sujet fourni par l'ecole : SUJET.md en reprend le contenu, le PDF reste local
+*.pdf
