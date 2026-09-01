@@ -88,11 +88,11 @@ L'app ne rapporte aucun point. Elle doit juste être **testable** et **buildable
 
 ## Lot 3 — CI : le workflow GitHub Actions (S1→S2, ~4 h)
 
-- [ ] **3.1 — `.github/workflows/ci-cd.yml`, en-tête + `on:`** ✍️
+- [x] **3.1 — `.github/workflows/ci-cd.yml`, en-tête + `on:`** ✍️
       Déclencheurs : `push` sur `main` **et** tags `v*.*.*`.
       *Contrôle : que se passe-t-il si on pousse un tag depuis une branche autre
       que `main` ? Le workflow part-il quand même ?*
-- [ ] **3.2 — Job `test`** ✍️
+- [x] **3.2 — Job `test`** ✍️
       `runs-on: ubuntu-latest`, checkout épinglé, `setup-node` avec cache npm,
       `npm ci`, `npm test`.
       *Contrôle : différence entre `npm ci` et `npm install` en CI ?*

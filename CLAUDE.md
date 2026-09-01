@@ -274,7 +274,10 @@ tag v*.*.* ─────┘                                              │
 ### GitHub Actions
 - Un seul workflow `ci-cd.yml`, jobs séparés reliés par `needs:` — pas un job
   géant. Le job `test` doit être un **gate** : s'il échoue, rien ne se build.
-- Toujours épingler les actions tierces (`actions/checkout@v4`, pas `@main`).
+- Toujours épingler les actions tierces sur un tag de version, jamais `@main`.
+  Versions majeures en cours (vérifiées le 01/09/2026) : `actions/checkout@v7`,
+  `actions/setup-node@v7`, `docker/login-action@v4`, `docker/metadata-action@v6`,
+  `docker/build-push-action@v7`.
 - `permissions:` déclaré explicitement au niveau job (`contents: read`,
   `packages: write` pour le push GHCR).
 - Notification Google Chat dans un job final avec `if: always()`, sinon aucune
