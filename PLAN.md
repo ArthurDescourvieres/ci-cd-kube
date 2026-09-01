@@ -48,7 +48,7 @@ L'app ne rapporte aucun point. Elle doit juste être **testable** et **buildable
       L'app Express seule : une route `GET /` (message + version) et une route
       `GET /health` (pour les probes Kubernetes plus tard). **Exporte** l'app,
       ne l'écoute pas.
-- [ ] **1.3 — `src/server.js`** ✍️
+- [x] **1.3 — `src/server.js`** ✍️
       Importe l'app et fait le `listen()`. Deux fichiers au lieu d'un : c'est ce
       qui permet de tester l'app sans ouvrir de port.
       *Contrôle : que se passerait-il en test si `listen()` était dans `app.js` ?*
