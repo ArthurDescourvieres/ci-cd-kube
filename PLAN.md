@@ -52,10 +52,10 @@ L'app ne rapporte aucun point. Elle doit juste être **testable** et **buildable
       Importe l'app et fait le `listen()`. Deux fichiers au lieu d'un : c'est ce
       qui permet de tester l'app sans ouvrir de port.
       *Contrôle : que se passerait-il en test si `listen()` était dans `app.js` ?*
-- [ ] **1.4 — `tests/app.test.js`** ✍️
+- [x] **1.4 — `tests/app.test.js`** ✍️
       2–3 tests Supertest : `GET /` → 200, `GET /health` → 200, route inconnue
       → 404. Un de ces tests servira à la **démo d'échec**.
-- [ ] **1.5 — `npm test` vert en local** 🖥️
+- [x] **1.5 — `npm test` vert en local** 🖥️
       *Contrôle : quel code de sortie renvoie `npm test` quand un test échoue ?
       Pourquoi toute la pipeline dépend de ça ?*
 
@@ -63,7 +63,7 @@ L'app ne rapporte aucun point. Elle doit juste être **testable** et **buildable
 
 ## Lot 2 — Docker (S1, ~3 h) — première vraie brique notée
 
-- [ ] **2.1 — `.dockerignore`** 🤖
+- [x] **2.1 — `.dockerignore`** 🤖
       *Contrôle : que se passe-t-il si on oublie `node_modules/` dedans ?*
 - [ ] **2.2 — `Dockerfile`, étape `base`** ✍️
       `FROM node:22-alpine`, `WORKDIR`. Pourquoi Alpine, pourquoi épingler la
