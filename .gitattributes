@@ -6,3 +6,6 @@
 # Binaires : ne jamais toucher
 *.png binary
 *.pdf binary
+
+# Les .bat doivent garder des CRLF : cmd.exe casse sur un fichier en LF seul.
+*.bat text eol=crlf
