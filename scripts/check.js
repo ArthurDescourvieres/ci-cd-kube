@@ -1,11 +1,3 @@
-#!/usr/bin/env node
-// Vérifie la syntaxe de tous les fichiers .js du projet, sans rien exécuter.
-//
-// Zéro dépendance : c'est `node --check` appliqué à chaque fichier trouvé.
-// Ça n'attrape pas les fautes de logique — juste ce qui ne compile pas
-// (virgule oubliée, accolade en trop, import mal fermé).
-//
-//     npm run check
 import { readdirSync, statSync, existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { execFileSync } from 'node:child_process'
@@ -36,5 +28,4 @@ for (const f of fichiers) {
 }
 
 console.log(`\n${fichiers.length} fichier(s) vérifié(s), ${erreurs} erreur(s)`)
-// Code de sortie non nul si ça casse : indispensable pour un usage en CI.
 process.exit(erreurs > 0 ? 1 : 0)

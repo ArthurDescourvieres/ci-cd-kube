@@ -1,14 +1,4 @@
 #!/usr/bin/env python3
-"""Génère le burn down chart du projet à partir des issues GitHub.
-
-Aucune dépendance : stdlib seule. Le SVG est écrit à la main, puis converti
-en PNG par Chrome en mode headless (le seul convertisseur présent sur la
-machine).
-
-    python scripts/burndown.py
-
-Sorties : docs/burndown.svg et docs/burndown.png
-"""
 import json
 import os
 import shutil
@@ -20,9 +10,6 @@ REPO = "ArthurDescourvieres/ci-cd-kube"
 START = date(2026, 9, 1)
 END = date(2026, 9, 18)  # soutenance
 
-# Le burndown est pondéré en HEURES, pas en nombre d'issues : une issue du
-# lot 5 (Kubernetes) ne pèse pas comme une issue du lot 0. Les estimations
-# viennent de PLAN.md.  (premiere_issue, derniere_issue, heures_du_lot)
 LOTS = [
     ("0 - Setup",         1,  3,  1.0),
     ("1 - App",           4,  8,  2.0),
@@ -44,7 +31,6 @@ IDEAL, ACTUAL, LATE = "#8c959f", "#1a7f37", "#cf222e"
 
 
 def poids_par_issue():
-    """heures -> une valeur par numéro d'issue."""
     p = {}
     for _, lo, hi, heures in LOTS:
         n = hi - lo + 1
@@ -54,7 +40,6 @@ def poids_par_issue():
 
 
 def gh_bin():
-    """Sur Windows, subprocess ne résout pas « gh » tout seul : il faut gh.exe."""
     return (shutil.which("gh") or shutil.which("gh.exe")
             or r"C:\Program Files\GitHub CLI\gh.exe")
 
@@ -69,7 +54,6 @@ def issues():
 
 
 def serie_reelle(data, poids):
-    """reste à faire (heures) pour chaque jour de START à aujourd'hui."""
     total = sum(poids.values())
     fermees = {}
     for i in data:
@@ -114,7 +98,6 @@ def svg(total, serie):
         f'{jours} jours avant la soutenance</text>'
     )
 
-    # --- grille horizontale + axe Y (heures) ---
     pas = 5
     v = 0
     while v <= total + 0.01:
@@ -125,7 +108,6 @@ def svg(total, serie):
                  f'fill="{MUTED}" text-anchor="end">{v:.0f} h</text>')
         v += pas
 
-    # --- axe X (dates) ---
     j = START
     while j <= END:
         xx = x(j)
@@ -139,12 +121,10 @@ def svg(total, serie):
                  f'fill="{MUTED}" text-anchor="middle">{j.strftime("%d/%m")}</text>')
         j += timedelta(days=1)
 
-    # --- ligne idéale ---
     s.append(f'<line x1="{x(START):.1f}" y1="{y(total,total):.1f}" '
              f'x2="{x(END):.1f}" y2="{y(0,total):.1f}" stroke="{IDEAL}" '
              f'stroke-width="2" stroke-dasharray="6 5"/>')
 
-    # --- ligne réelle (escalier) ---
     if serie:
         pts, prev = [], None
         for j, v in serie:
@@ -161,7 +141,6 @@ def svg(total, serie):
         s.append(f'<circle cx="{x(jd):.1f}" cy="{y(vd,total):.1f}" r="4.5" '
                  f'fill="{col}"/>')
 
-    # --- légende ---
     ly = H - 26
     s.append(f'<line x1="{M["l"]}" y1="{ly}" x2="{M["l"]+26}" y2="{ly}" '
              f'stroke="{IDEAL}" stroke-width="2" stroke-dasharray="6 5"/>')

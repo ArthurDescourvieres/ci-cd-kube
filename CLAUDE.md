@@ -54,6 +54,32 @@ Uniquement ce qui n'a **aucune valeur pédagogique** à taper à la main :
 Dans ces cas : écrire le fichier, puis **dire en 2 lignes ce qu'il contient**
 et pourquoi. Aucune boîte noire ne reste sans explication.
 
+### Pas de code qui sent l'IA
+
+Le repo est public et le projet est noté. Du code truffé de commentaires
+explicatifs se repère immédiatement comme généré, et c'est mal vu sur un projet
+d'apprentissage.
+
+- **Claude n'ajoute aucun commentaire** dans le code qu'il génère : pas
+  d'en-tête de fichier, pas de `// on fait X`, pas de docstring décorative.
+- L'explication va dans le **chat**, dans **PLAN.md** ou dans le **README** —
+  jamais dans le fichier.
+- Seule exception, celle qu'un dev humain écrirait vraiment : un *pourquoi* non
+  devinable (contournement, contrainte externe). **Une ligne**, pas un
+  paragraphe.
+- Même exigence sur le code dicté : si un bloc a besoin de cinq lignes de
+  commentaire pour être compris, c'est l'explication orale qu'il faut améliorer,
+  pas le fichier qu'il faut alourdir.
+- Nommage et style : ceux du reste du repo. Pas de sur-abstraction, pas de
+  garde-fous inutiles, pas de `try/catch` décoratif.
+
+### Le partage ✍️ / 🤖 n'est pas figé
+
+L'utilisateur peut promouvoir un fichier en 🤖 quand il **connaît déjà** le
+sujet et qu'on gagne du temps à le générer. Il le dit explicitement ; par
+défaut, la liste de la section précédente s'applique. L'inverse vaut aussi :
+il peut demander à taper lui-même un fichier classé 🤖.
+
 ### Git et outillage : Claude exécute
 
 Les **commandes** ne sont pas du code noté. Claude les lance lui-même :
