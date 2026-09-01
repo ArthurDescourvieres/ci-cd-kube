@@ -44,7 +44,7 @@ L'app ne rapporte aucun point. Elle doit juste être **testable** et **buildable
       `devDependencies`.
       *Contrôle : pourquoi Vitest est en `devDependencies` ? Quel impact sur la
       taille de l'image Docker ?*
-- [ ] **1.2 — `src/app.js`** ✍️
+- [x] **1.2 — `src/app.js`** ✍️
       L'app Express seule : une route `GET /` (message + version) et une route
       `GET /health` (pour les probes Kubernetes plus tard). **Exporte** l'app,
       ne l'écoute pas.
