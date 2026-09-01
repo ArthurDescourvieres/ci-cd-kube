@@ -8,8 +8,6 @@ npm-debug.log
 
 k8s
 docs
-scripts
-tests
 
 *.md
 compose.yaml

@@ -65,10 +65,10 @@ L'app ne rapporte aucun point. Elle doit juste être **testable** et **buildable
 
 - [x] **2.1 — `.dockerignore`** 🤖
       *Contrôle : que se passe-t-il si on oublie `node_modules/` dedans ?*
-- [ ] **2.2 — `Dockerfile`, étape `base`** ✍️
+- [x] **2.2 — `Dockerfile`, étape `base`** ✍️
       `FROM node:22-alpine`, `WORKDIR`. Pourquoi Alpine, pourquoi épingler la
       version majeure plutôt que `node:latest`.
-- [ ] **2.3 — `Dockerfile`, étape `deps`** ✍️
+- [x] **2.3 — `Dockerfile`, étape `deps`** ✍️
       `COPY package*.json` **avant** `COPY . .` — la ligne la plus souvent
       demandée en soutenance (cache de layers).
       *Contrôle : pourquoi copier `package.json` seul d'abord ?*
