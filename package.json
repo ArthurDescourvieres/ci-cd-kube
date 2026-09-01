@@ -10,7 +10,7 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",
-    "check": "node scripts/check.mjs",
+    "check": "node scripts/check.js",
     "test": "vitest run"
   },
   "dependencies": {

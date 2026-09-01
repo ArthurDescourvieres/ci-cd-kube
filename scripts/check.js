@@ -10,7 +10,7 @@ import { readdirSync, statSync, existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { execFileSync } from 'node:child_process'
 
-const DOSSIERS = ['src', 'tests']
+const DOSSIERS = ['src', 'tests', 'scripts']
 
 function fichiersJs(dossier) {
   if (!existsSync(dossier)) return []
