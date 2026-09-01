@@ -72,13 +72,13 @@ L'app ne rapporte aucun point. Elle doit juste être **testable** et **buildable
       `COPY package*.json` **avant** `COPY . .` — la ligne la plus souvent
       demandée en soutenance (cache de layers).
       *Contrôle : pourquoi copier `package.json` seul d'abord ?*
-- [ ] **2.4 — `Dockerfile`, target `dev`** ✍️
+- [x] **2.4 — `Dockerfile`, target `dev`** ✍️
       Toutes les dépendances, commande de dev.
-- [ ] **2.5 — `Dockerfile`, target `prod`** ✍️
+- [x] **2.5 — `Dockerfile`, target `prod`** ✍️
       `npm ci --omit=dev`, `USER node`, `CMD node src/server.js`.
       *Contrôle : pourquoi `USER node` ? Que risque-t-on en root dans un
       conteneur ?*
-- [ ] **2.6 — Build local des deux targets** 🖥️
+- [x] **2.6 — Build local des deux targets** 🖥️
       Comparer les tailles avec `docker images` : l'écart dev/prod est un
       argument de soutenance.
 - [ ] **2.7 — `compose.yaml`** ✍️
@@ -132,8 +132,10 @@ L'app ne rapporte aucun point. Elle doit juste être **testable** et **buildable
 
 ## Lot 5 — Kubernetes en local (S2, ~5 h) — le gros morceau
 
-- [ ] **5.1 — Installer `kind` + `kubectl`** 🧑 **, créer le cluster** 🖥️
-      Cluster avec un mapping de ports pour l'ingress.
+- [x] **5.1 — Cluster Kubernetes disponible** ✅
+      Rien à installer : **Rancher Desktop** fait déjà tourner un cluster k3s
+      (contexte `rancher-desktop`, node `laptop`, k8s v1.36). `kind` n'est pas
+      nécessaire.
 - [ ] **5.2 — Namespace `ci-cd-kube`** 🖥️
       *Contrôle : pourquoi pas `default` ?*
 - [ ] **5.3 — `k8s/deployment.yaml`** ✍️ (dicté en 3 blocs)
@@ -143,7 +145,9 @@ L'app ne rapporte aucun point. Elle doit juste être **testable** et **buildable
       chaque cas quand la probe échoue ? Et si on met `limits` sans `requests` ?*
 - [ ] **5.4 — `k8s/service.yaml`** ✍️
       *Contrôle : ClusterIP vs NodePort vs LoadBalancer — lequel et pourquoi ?*
-- [ ] **5.5 — Ingress controller sur kind** 🖥️ (ingress-nginx)
+- [x] **5.5 — Ingress controller** ✅
+      **Traefik** est déjà installé et marqué `default` par Rancher Desktop.
+      Pas d'ingress-nginx à déployer ; l'`ingressClassName` sera `traefik`.
 - [ ] **5.6 — `k8s/ingress.yaml`** ✍️
 - [ ] **5.7 — `kubectl apply` manuel + app joignable** 🖥️
       À ce stade tout marche **à la main**. La CD arrive après.

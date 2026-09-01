@@ -146,7 +146,7 @@ pas du code noté : Claude l'écrit et le maintient lui-même (catégorie 🤖).
 | Stack app | **Node.js 22 + Express + Vitest** | Docker rapide, tests instantanés, image Alpine légère |
 | Registre | **GHCR** (`ghcr.io/<user>/ci-cd-kube`) | Auth native via `GITHUB_TOKEN`, aucun secret à créer |
 | CI/CD | **GitHub Actions** | Imposé par le sujet |
-| Cluster | **kind local**, monté sur la machine de l'utilisateur | Aucune infra fournie par l'école (à reconfirmer auprès du formateur) |
+| Cluster | **k3s via Rancher Desktop**, déjà en place sur la machine | Aucune infra fournie par l'école. Rancher Desktop fournit cluster + `kubectl` + Traefik sans rien installer de plus ; `kind` devient inutile |
 | Accès CD au cluster | **Runner GitHub self-hosted** sur la machine de l'utilisateur | Gratuit, aucun port à ouvrir, aucun kubeconfig à exposer |
 | Notifications | **Google Chat webhook** | Imposé par le sujet |
 
