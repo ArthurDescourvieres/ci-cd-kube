@@ -1,0 +1,23 @@
+# Dépendances — reconstruites par `npm ci` depuis package-lock.json
+node_modules/
+
+# Secrets : le repo est PUBLIC, rien de ce qui suit ne doit sortir
+.env
+.env.*
+!.env.example
+*.kubeconfig
+kubeconfig
+
+# Runner GitHub self-hosted (lot 6) — s'installe dans un dossier local
+actions-runner/
+_work/
+
+# Sorties de test et de build
+coverage/
+dist/
+
+# OS et éditeurs
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

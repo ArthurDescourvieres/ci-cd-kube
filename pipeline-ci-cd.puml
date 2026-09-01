@@ -1,0 +1,220 @@
+@startuml pipeline-ci-cd
+title Diagramme d'activite - Pipeline CI/CD ci-cd-kube
+
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName Helvetica
+skinparam defaultFontSize 12
+skinparam ActivityBackgroundColor #F5F7FA
+skinparam ActivityBorderColor #2D3E50
+skinparam ActivityDiamondBackgroundColor #FFF3CD
+skinparam ActivityDiamondBorderColor #B8860B
+skinparam ArrowColor #2D3E50
+skinparam swimlaneWidth same
+
+' Deux decoupages se superposent dans ce schema, il ne faut pas les confondre :
+'  - les COULOIRS decoupent par MACHINE d'execution (qui a acces a quoi) ;
+'  - les etiquettes [CI] / [CD] decoupent par INTENTION (valider le code
+'    vs installer l'artefact). La frontiere entre les deux est le push GHCR.
+|#E8F0FE|Developpeur|
+|#FFF0E6|GitHub Actions - runner ubuntu-latest (cloud)|
+|#E6F7EE|GitHub Actions - runner self-hosted (machine locale)|
+|#F0E6FF|Cluster Kubernetes (local)|
+|#FCE8E6|Google Chat|
+
+|Developpeur|
+start
+:Push sur la branche main
+ou creation d'un tag git vX.Y.Z;
+
+|GitHub Actions - runner ubuntu-latest (cloud)|
+:Declenchement du workflow ci-cd.yml;
+
+' ============================================================
+'  CI - INTEGRATION CONTINUE
+'  Question posee : "le code integre casse-t-il quelque chose ?"
+'  Deux jobs en parallele (fork) : ils sont independants, donc
+'  aucune raison de les serialiser. Ils convergent sur `build`
+'  via `needs: [quality, test]`.
+' ============================================================
+fork
+  :<b>job quality</b> [CI]
+  Checkout + npm ci;
+  :Analyse statique du code
+  ESLint + Prettier --check;
+  :Audit des dependances
+  npm audit --audit-level=high;
+  :Lint du Dockerfile
+  hadolint;
+  :<b>Validation des manifests k8s</b>
+  kubeconform sur k8s/*.yaml
+  (les manifests sont du code : on les
+  valide sans avoir besoin d'un cluster);
+fork again
+  :<b>job test</b> [CI]
+  Checkout + npm ci;
+  :Tests unitaires (Vitest)
+  logique metier pure, aucun I/O;
+  :Tests d'integration API (supertest)
+  routes, codes HTTP, content-type,
+  /health et /ready = ce que k8s appellera
+  dans les liveness/readiness probes;
+  :Couverture de code
+  seuil bloquant >= 80%;
+end fork
+
+' Mise en page des branches d'echec : le `stop` reste dans le couloir Google Chat
+' et le couloir d'execution n'est restaure qu'apres le `endif`. Sans cela,
+' PlantUML trace une fleche de retour qui traverse tout le schema.
+' Rappel : `|Couloir|` est un etat persistant, pas une portee - il reste actif
+' jusqu'au prochain changement, y compris en sortant d'un `if`.
+if (Tous les jobs CI verts ?) then (oui)
+else (non)
+  |Google Chat|
+  :Notification ECHEC
+  (job fautif, commit, auteur, logs);
+  stop
+endif
+
+' ============================================================
+'  CD / DELIVERY - production d'un artefact deployable
+' ============================================================
+|GitHub Actions - runner ubuntu-latest (cloud)|
+:<b>job build</b> (needs: [quality, test]) [CD - Delivery]
+Build de l'image Docker
+(multi-stage, target prod);
+
+:<b>Smoke test de l'artefact</b>
+docker run -d + curl /health sur l'image
+qui vient d'etre construite
+(valide le Dockerfile, pas le code :
+CMD, deps prod, USER node, port);
+note right
+  Les tests precedents validaient
+  LE CODE. Celui-ci valide
+  L'ARTEFACT. On ne pousse jamais
+  sur un registre une image dont
+  on n'a pas verifie qu'elle demarre.
+end note
+
+:Scan de vulnerabilites de l'image
+Trivy (bloquant sur CRITICAL);
+
+if (Image saine et demarre ?) then (oui)
+else (non)
+  |Google Chat|
+  :Notification ECHEC
+  (image non fonctionnelle ou vulnerable
+  - rien n'a ete pousse sur le registre);
+  stop
+endif
+
+|GitHub Actions - runner ubuntu-latest (cloud)|
+if (Type de declencheur ?) then (push sur main)
+  :Tags image = dev + sha-<sha-court>;
+else (tag git vX.Y.Z)
+  :Tags image = X.Y.Z + latest;
+endif
+
+:Authentification sur GHCR
+(GITHUB_TOKEN, packages: write);
+:Push de l'image sur le registre;
+note right
+  ==== FRONTIERE CI / CD ====
+  Avant : on manipule du code source.
+  Apres : on ne manipule plus que le
+  tag d'une image immuable. C'est le
+  seul lien entre les deux moities.
+end note
+
+if (Push registre reussi ?) then (oui)
+else (non)
+  |Google Chat|
+  :Notification ECHEC
+  (etape push registre);
+  stop
+endif
+
+' ============================================================
+'  CD / DEPLOYMENT - installation automatique sur le cluster
+' ============================================================
+|GitHub Actions - runner self-hosted (machine locale)|
+:<b>job deploy</b> (needs: build) [CD - Deployment]
+Le runner local recupere le job
+(long polling HTTPS sortant vers GitHub :
+aucun port entrant ouvert sur la machine);
+note right
+  Job declenche uniquement sur
+  push main et sur tag.
+  Jamais sur pull_request :
+  le repo est public, du code
+  issu d'un fork ne doit pas
+  s'executer sur la machine.
+end note
+
+:Checkout des manifests k8s;
+:Application des manifests
+(deployment, service, ingress)
+dans le namespace ci-cd-kube;
+:Mise a jour de l'image du deployment
+(kubectl set image, tag immuable);
+
+|Cluster Kubernetes (local)|
+:Creation des nouveaux pods;
+:Rolling update du deployment
+(pilote par les readinessProbe :
+aucun ancien pod supprime tant qu'un
+nouveau n'est pas pret);
+
+|GitHub Actions - runner self-hosted (machine locale)|
+:<b>Test de deploiement</b>
+kubectl rollout status --timeout=120s
+(echoue si les pods ne deviennent
+jamais Ready);
+:<b>Smoke test post-deploiement</b>
+curl via l'Ingress :
+/health = 200 ET /version = le SHA
+qu'on vient de deployer;
+note right
+  Verifier /version evite le piege
+  classique : valider par erreur
+  l'ANCIENNE version encore en ligne.
+end note
+
+if (Deploiement verifie ?) then (oui)
+else (non)
+  |GitHub Actions - runner self-hosted (machine locale)|
+  :Rollback vers la version precedente
+  (kubectl rollout undo);
+  |Google Chat|
+  :Notification ECHEC
+  (deploiement + rollback effectue);
+  stop
+endif
+
+|Cluster Kubernetes (local)|
+:Application disponible
+via l'Ingress;
+
+|Google Chat|
+:<b>job notify</b> (if: always()) [transverse]
+Notification SUCCES
+(commit, auteur, tag image,
+environnement, duree);
+stop
+
+legend right
+  <b>Lecture du schema</b>
+  --
+  <b>[CI]</b> Integration continue : jobs quality + test.
+     Valide LE CODE. Gate : si rouge, rien n'est construit.
+  <b>[CD - Delivery]</b> job build. Produit et publie un
+     ARTEFACT immuable et verifie sur GHCR.
+  <b>[CD - Deployment]</b> job deploy. Installe l'artefact
+     sur le cluster sans intervention humaine.
+  <b>[transverse]</b> job notify. Ni CI ni CD :
+     observabilite de la pipeline.
+  --
+  La frontiere CI / CD est le <b>push sur GHCR</b>.
+end legend
+
+@enduml

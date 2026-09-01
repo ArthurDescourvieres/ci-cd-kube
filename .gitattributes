@@ -1,0 +1,8 @@
+# Tout le texte est normalisé en LF dans Git et dans le working directory.
+# Sans ça, Windows commiterait des CRLF : un script shell copié dans une image
+# Alpine échouerait alors avec « not found » à cause du \r final.
+* text=auto eol=lf
+
+# Binaires : ne jamais toucher
+*.png binary
+*.pdf binary
