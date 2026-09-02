@@ -115,9 +115,9 @@ L'app ne rapporte aucun point. Elle doit juste être **testable** et **buildable
 
 ## Lot 4 — Notifications Google Chat (S2, ~2 h)
 
-- [ ] **4.1 — Créer l'espace Chat + le webhook** 🧑
+- [x] **4.1 — Créer l'espace Chat + le webhook** 🧑
       Google Chat → un espace → *Applications et intégrations* → *Webhooks*.
-- [ ] **4.2 — Enregistrer `GOOGLE_CHAT_WEBHOOK` dans les secrets GitHub** 🧑
+- [x] **4.2 — Enregistrer `GOOGLE_CHAT_WEBHOOK` dans les secrets GitHub** 🧑
       Le repo est **public** : l'URL du webhook ne doit apparaître dans **aucun**
       fichier. Un webhook Chat n'a pas d'authentification — qui a l'URL peut
       poster.
