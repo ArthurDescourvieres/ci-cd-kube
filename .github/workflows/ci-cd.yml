@@ -57,3 +57,25 @@ jobs:
           docker build --target prod -t $IMAGE:$VERSION -t $IMAGE:latest .
           docker push $IMAGE:$VERSION
           docker push $IMAGE:latest
+
+  notify:
+    name: CI · Google Chat notification
+    needs: [test, build]
+    runs-on: ubuntu-24.04
+    if: always() && github.event_name == 'push'
+    permissions:
+      contents: read
+    steps: 
+
+      - name: Send Google Chat notification 
+        env: 
+          WEBHOOK: ${{ secrets.GOOGLE_CHAT_WEBHOOK }}
+          STATUS: ${{ contains(needs.*.result, 'failure') && 'FAILURE' || 'SUCCESS' }}
+          AUTHOR: ${{ github.actor }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository}}/actions/runs/${{ github.run_id }}
+        run: |
+          MESSAGE="*CI/CD $STATUS* - ci-cd-kube\ncommit ${GITHUB_SHA:0:7} by $AUTHOR\n<$RUN_URL|open the run>"
+          curl -sS -X POST "$WEBHOOK" \
+            -H 'Content-Type: application/json' \
+            -d "{\"text\": \"$MESSAGE\"}"
+        # The message will be : CI/CD SUCCESS - ci-cd-kube commit cc1a23c by ArthurDescourvieres open the run
