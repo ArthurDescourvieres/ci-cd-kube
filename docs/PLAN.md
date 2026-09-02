@@ -107,7 +107,7 @@ L'app ne rapporte aucun point. Elle doit juste être **testable** et **buildable
       *Contrôle : pourquoi pousser aussi `:sha-…` alors qu'on a déjà `:dev` ?*
 - [x] **3.5 — Premier run vert sur GitHub** 🖥️
       Vérifier les images dans l'onglet **Packages** du repo.
-- [ ] **3.6 — Démo d'échec** 🖥️
+- [x] **3.6 — Démo d'échec** 🖥️
       Casser volontairement un test, pousser, vérifier que `build` ne démarre
       pas. **À refaire le jour de la soutenance** — c'est explicitement demandé.
 
