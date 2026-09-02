@@ -126,7 +126,7 @@ L'app ne rapporte aucun point. Elle doit juste être **testable** et **buildable
       commit, auteur, statut, lien vers le run.
       *Contrôle : sans `if: always()`, dans quel cas la notif n'arrive-t-elle
       pas ? Et pourquoi c'est justement le cas où on en a le plus besoin ?*
-- [ ] **4.4 — Vérifier les deux chemins** 🖥️🧑 succès **et** échec.
+- [x] **4.4 — Vérifier les deux chemins** 🖥️🧑 succès **et** échec.
 
 ---
 
