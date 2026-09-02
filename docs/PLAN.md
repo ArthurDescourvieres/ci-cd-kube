@@ -1,6 +1,6 @@
 # PLAN — CI-CD Kube, étape par étape
 
-> Règle du jeu : voir [CLAUDE.md](CLAUDE.md) § « Mode de travail ».
+> Règle du jeu : voir [CLAUDE.md](../CLAUDE.md) § « Mode de travail ».
 > **Toi** tu tapes tout ce qui est marqué ✍️. **Claude** ne génère que le 🤖.
 > Une étape est finie quand le fichier marche. Les questions de contrôle sont là
 > pour repérer ce qu'il faudra réviser avant la soutenance, pas pour bloquer.
@@ -13,7 +13,7 @@ et te l'explique · 🧑 manip que toi seul peux faire (navigateur, compte, inst
 Chaque étape a son **issue GitHub** (numérotées 1 à 41, même ordre que ce
 fichier) et sa carte sur le board :
 
-- Burn down : [`docs/burndown.png`](docs/burndown.png) — régénéré à chaque
+- Burn down : [`burndown.png`](burndown.png) — régénéré à chaque
   étape close
 - Board : <https://github.com/users/ArthurDescourvieres/projects/11>
 - Issues : <https://github.com/ArthurDescourvieres/ci-cd-kube/issues>
@@ -96,12 +96,12 @@ L'app ne rapporte aucun point. Elle doit juste être **testable** et **buildable
       `runs-on: ubuntu-latest`, checkout épinglé, `setup-node` avec cache npm,
       `npm ci`, `npm test`.
       *Contrôle : différence entre `npm ci` et `npm install` en CI ?*
-- [ ] **3.3 — Job `build`** ✍️
+- [x] **3.3 — Job `build`** ✍️
       `needs: test` (le gate), login GHCR avec `GITHUB_TOKEN`, `permissions:`
       explicite au niveau job.
       *Contrôle : pourquoi `packages: write`, et pourquoi le déclarer par job
       plutôt qu'en haut du fichier ?*
-- [ ] **3.4 — Stratégie de tags d'image** ✍️
+- [x] **3.4 — Stratégie de tags d'image** ✍️
       push `main` → `:dev` + `:sha-xxxxxxx` · tag `vX.Y.Z` → `:X.Y.Z` +
       `:latest`. Choix du `--target` (dev ou prod) selon le déclencheur.
       *Contrôle : pourquoi pousser aussi `:sha-…` alors qu'on a déjà `:dev` ?*

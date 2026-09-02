@@ -2,8 +2,8 @@
 
 ## Contexte
 
-Projet de formation M2. Le sujet complet fait foi : [SUJET.md](SUJET.md).
-L'avancement étape par étape est suivi dans [PLAN.md](PLAN.md).
+Projet de formation M2. Le sujet complet fait foi : [SUJET.md](docs/SUJET.md).
+L'avancement étape par étape est suivi dans [PLAN.md](docs/PLAN.md). Le sujet et le plan vivent dans `docs/`.
 **Deadline : vendredi 18 septembre 2026** (soutenance + repo GitHub **public**).
 Démarrage : 31 août 2026.
 
@@ -114,7 +114,7 @@ corrige pas silencieusement à la place de l'utilisateur.
 
 ### Rythme
 
-Une brique à la fois, en suivant [PLAN.md](PLAN.md). Ne pas enchaîner trois
+Une brique à la fois, en suivant [PLAN.md](docs/PLAN.md). Ne pas enchaîner trois
 étapes du plan dans une seule réponse, même si c'est plus rapide.
 
 ### Clôture d'étape : le rituel en 5 gestes (obligatoire)
@@ -124,7 +124,7 @@ sans qu'on le lui demande :
 
 1. `gh issue close <n> --reason completed` sur l'issue correspondante ;
 2. carte du board passée en **Fait** (`gh project item-edit`) ;
-3. case cochée dans [PLAN.md](PLAN.md) ;
+3. case cochée dans [PLAN.md](docs/PLAN.md) ;
 4. `python scripts/burndown.py` — régénère `docs/burndown.svg` **et**
    `docs/burndown.png` ;
 5. commit + push de ce qui vient de changer.
@@ -193,7 +193,7 @@ GitOps pull (élégant mais une journée d'apprentissage en plus).
 
 `https://github.com/ArthurDescourvieres/ci-cd-kube` — **public**, créé le
 1er septembre 2026. Le suivi d'avancement se fait dans les **issues** du repo
-(une issue par étape de [PLAN.md](PLAN.md), labellisée par lot) et sur le board
+(une issue par étape de [PLAN.md](docs/PLAN.md), labellisée par lot) et sur le board
 <https://github.com/users/ArthurDescourvieres/projects/11> (colonnes *À faire /
 En cours / Bloqué / Fait*, champ *Lot* pour grouper).
 
@@ -232,12 +232,12 @@ tag v*.*.* ─────┘                                              │
 ├── compose.yaml           # confort local, hors périmètre noté
 ├── CLAUDE.md
 ├── docs/
+│   ├── PLAN.md            # plan d'avancement, une étape = une issue GitHub
+│   ├── SUJET.md           # conversion fidèle du PDF du sujet
 │   ├── burndown.svg       # régénéré à chaque étape close
 │   └── burndown.png
 ├── scripts/
 │   └── burndown.py        # outillage 🤖, lit les issues GitHub
-├── PLAN.md               # plan d'avancement, une étape = une issue GitHub
-├── SUJET.md
 └── README.md              # vitrine du rendu : schéma, choix, comment reproduire
 ```
 
@@ -272,6 +272,9 @@ tag v*.*.* ─────┘                                              │
   impossible et `kubectl rollout` ne détecte aucun changement.
 
 ### GitHub Actions
+- `runs-on: ubuntu-24.04`, pas `ubuntu-latest` : le label `latest` bascule vers
+  la LTS suivante sans qu'on choisisse le moment. Épinglé, on décide quand
+  migrer. Au 01/09/2026, `ubuntu-latest` = `ubuntu-24.04`.
 - Un seul workflow `ci-cd.yml`, jobs séparés reliés par `needs:` — pas un job
   géant. Le job `test` doit être un **gate** : s'il échoue, rien ne se build.
 - Toujours épingler les actions tierces sur un tag de version, jamais `@main`.
