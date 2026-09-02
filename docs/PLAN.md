@@ -121,7 +121,7 @@ L'app ne rapporte aucun point. Elle doit juste être **testable** et **buildable
       Le repo est **public** : l'URL du webhook ne doit apparaître dans **aucun**
       fichier. Un webhook Chat n'a pas d'authentification — qui a l'URL peut
       poster.
-- [ ] **4.3 — Job `notify`** ✍️
+- [x] **4.3 — Job `notify`** ✍️
       `if: always()`, `needs:` sur tous les jobs précédents, payload JSON avec
       commit, auteur, statut, lien vers le run.
       *Contrôle : sans `if: always()`, dans quel cas la notif n'arrive-t-elle
