@@ -84,7 +84,3 @@ jobs:
             -d "{\"text\": \"$MESSAGE\"}"
         # The message will be : CI/CD SUCCESS - ci-cd-kube commit cc1a23c by ArthurDescourvieres open the run
 
-  deploy: 
-    name: CD déploiement Kubernetes
-    needs: [test, build]
-    runs-on: self-hosted
