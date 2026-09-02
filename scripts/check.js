@@ -2,30 +2,30 @@ import { readdirSync, statSync, existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { execFileSync } from 'node:child_process'
 
-const DOSSIERS = ['src', 'tests', 'scripts']
+const DIRECTORIES = ['src', 'tests', 'scripts']
 
-function fichiersJs(dossier) {
-  if (!existsSync(dossier)) return []
-  return readdirSync(dossier).flatMap((nom) => {
-    const chemin = join(dossier, nom)
-    if (statSync(chemin).isDirectory()) return fichiersJs(chemin)
-    return /\.m?js$/.test(nom) ? [chemin] : []
+function jsFiles(dir) {
+  if (!existsSync(dir)) return []
+  return readdirSync(dir).flatMap((name) => {
+    const path = join(dir, name)
+    if (statSync(path).isDirectory()) return jsFiles(path)
+    return /\.m?js$/.test(name) ? [path] : []
   })
 }
 
-const fichiers = DOSSIERS.flatMap(fichiersJs)
-let erreurs = 0
+const files = DIRECTORIES.flatMap(jsFiles)
+let errors = 0
 
-for (const f of fichiers) {
+for (const f of files) {
   try {
     execFileSync(process.execPath, ['--check', f], { stdio: 'pipe' })
     console.log(`  ok   ${f}`)
   } catch (e) {
-    erreurs++
+    errors++
     console.error(`  FAIL ${f}`)
     console.error(String(e.stderr).trim())
   }
 }
 
-console.log(`\n${fichiers.length} fichier(s) vérifié(s), ${erreurs} erreur(s)`)
-process.exit(erreurs > 0 ? 1 : 0)
+console.log(`\n${files.length} file(s) checked, ${errors} error(s)`)
+process.exit(errors > 0 ? 1 : 0)
