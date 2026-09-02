@@ -136,7 +136,7 @@ L'app ne rapporte aucun point. Elle doit juste être **testable** et **buildable
       Rien à installer : **Rancher Desktop** fait déjà tourner un cluster k3s
       (contexte `rancher-desktop`, node `laptop`, k8s v1.36). `kind` n'est pas
       nécessaire.
-- [ ] **5.2 — Namespace `ci-cd-kube`** 🖥️
+- [x] **5.2 — Namespace `ci-cd-kube`** 🖥️
       *Contrôle : pourquoi pas `default` ?*
 - [ ] **5.3 — `k8s/deployment.yaml`** ✍️ (dicté en 3 blocs)
       `replicas: 2`, `resources.requests` **et** `limits`, `livenessProbe` +

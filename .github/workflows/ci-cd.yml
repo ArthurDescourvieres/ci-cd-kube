@@ -13,7 +13,7 @@ on:
 
 jobs:
   test:
-    name: CI · tests
+    name: CI tests
     runs-on: ubuntu-24.04
     permissions:
       contents: read
@@ -29,7 +29,7 @@ jobs:
       - run: npm test
 
   build:
-    name: CI · Docker image
+    name: CI Docker image
     needs: test
     runs-on: ubuntu-24.04
     if: github.event_name == 'push'
@@ -63,7 +63,7 @@ jobs:
           docker push $IMAGE:latest
 
   notify:
-    name: CI · Google Chat notification
+    name: CI Google Chat notification
     needs: [test, build]
     runs-on: ubuntu-24.04
     if: always() && github.event_name == 'push'
@@ -83,3 +83,8 @@ jobs:
             -H 'Content-Type: application/json' \
             -d "{\"text\": \"$MESSAGE\"}"
         # The message will be : CI/CD SUCCESS - ci-cd-kube commit cc1a23c by ArthurDescourvieres open the run
+
+  deploy: 
+    name: CD déploiement Kubernetes
+    needs: [test, build]
+    runs-on: self-hosted

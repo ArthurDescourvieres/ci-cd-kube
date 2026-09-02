@@ -13,18 +13,18 @@ describe('GET /', () => {
 })
 
 describe('GET /health', () => {
-      it('responds 200 with ok status', async () => {
-        const res = await request(app).get('/health')
+  it('responds 200 with ok status', async () => {
+    const res = await request(app).get('/health')
 
-        expect(res.status).toBe(200)
-        expect(res.body).toEqual({ status: 'ok' })
-      })
-    })
+    expect(res.status).toBe(200)
+    expect(res.body).toEqual({ status: 'ok' })
+  })
+})
 
-    describe('unknown route', () => {
-      it('responds 404', async () => {
-        const res = await request(app).get('/does-not-exist')
+describe('unknown route', () => {
+  it('responds 404', async () => {
+    const res = await request(app).get('/does-not-exist')
 
-        expect(res.status).toBe(404)
-      })
-    })
+    expect(res.status).toBe(404)
+  })
+})
