@@ -243,6 +243,13 @@ tag v*.*.* ─────┘                                              │
 
 ## Conventions
 
+### Langue
+
+Le **code** est en anglais : noms de variables/fonctions, messages de log,
+chaînes de caractères, descriptions de tests, noms de jobs/steps CI. La
+**documentation** (`README.md`, `CLAUDE.md`, `PLAN.md`, `SUJET.md`) reste en
+français — c'est la langue du cursus et de la soutenance.
+
 ### Git
 - Branche par défaut : `main`.
 - **Stratégie de branches, en deux temps :**
