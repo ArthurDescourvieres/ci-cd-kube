@@ -132,11 +132,15 @@ L'app ne rapporte aucun point. Elle doit juste être **testable** et **buildable
 
 ## Lot 5 — Kubernetes en local (S2, ~5 h) — le gros morceau
 
-- [x] **5.1 — Cluster Kubernetes disponible** ✅
-      Rien à installer : **Rancher Desktop** fait déjà tourner un cluster k3s
-      (contexte `rancher-desktop`, node `laptop`, k8s v1.36). `kind` n'est pas
-      nécessaire.
-- [x] **5.2 — Namespace `ci-cd-kube`** 🖥️
+- [x] **5.1 — Cluster Kubernetes disponible** ✅ *(revu le 03/09/2026)*
+      L'école a attribué un **vcluster** personnel : contexte
+      `vcluster-etudiant-01`, node `atelier-node-2`, k8s v1.36, joignable
+      depuis Internet. Kubeconfig fusionné dans `~/.kube/config` — deux
+      contextes cohabitent, on bascule avec `kubectl config use-context`.
+      Rancher Desktop reste le filet de secours pour travailler hors ligne.
+      *Contrôle : qu'est-ce qu'un vcluster ? Pourquoi `kubectl get nodes`
+      n'affiche qu'un seul nœud partagé avec les autres étudiants ?*
+- [x] **5.2 — Namespace `ci-cd-kube`** 🖥️ *(recréé sur le cluster école)*
       *Contrôle : pourquoi pas `default` ?*
 - [ ] **5.3 — `k8s/deployment.yaml`** ✍️ (dicté en 3 blocs)
       `replicas: 2`, `resources.requests` **et** `limits`, `livenessProbe` +
@@ -146,9 +150,16 @@ L'app ne rapporte aucun point. Elle doit juste être **testable** et **buildable
 - [ ] **5.4 — `k8s/service.yaml`** ✍️
       *Contrôle : ClusterIP vs NodePort vs LoadBalancer — lequel et pourquoi ?*
 - [x] **5.5 — Ingress controller** ✅
-      **Traefik** est déjà installé et marqué `default` par Rancher Desktop.
-      Pas d'ingress-nginx à déployer ; l'`ingressClassName` sera `traefik`.
+      **ingress-nginx** est déjà installé par l'école (`kubectl get
+      ingressclass` → `nginx`). Rien à déployer ; l'`ingressClassName` sera
+      `nginx`.
 - [ ] **5.6 — `k8s/ingress.yaml`** ✍️
+      Host `etudiant-01-ci-cd.development.atelier.ovh` (le préfixe
+      `etudiant-01-` est imposé), annotation
+      `cert-manager.io/cluster-issuer: letsencrypt` et bloc `tls:` pour le
+      certificat HTTPS automatique.
+      *Contrôle : à quoi sert le bloc `tls:` si le certificat est généré
+      automatiquement ? Que contient le Secret nommé dedans ?*
 - [ ] **5.7 — `kubectl apply` manuel + app joignable** 🖥️
       À ce stade tout marche **à la main**. La CD arrive après.
       *Contrôle : que montre `kubectl get pods -n ci-cd-kube` ? Et
@@ -160,17 +171,22 @@ L'app ne rapporte aucun point. Elle doit juste être **testable** et **buildable
 
 ## Lot 6 — CD : fermer la boucle (S3, ~3 h)
 
-- [ ] **6.1 — Installer le runner self-hosted** 🧑
-      Repo → Settings → Actions → Runners. Comprendre le sens du réseau
-      (connexion sortante, long polling) — voir CLAUDE.md.
+- [x] **6.1 — Secret `KUBE_CONFIG` dans GitHub** 🖥️ *(fait le 03/09/2026)*
+      Remplace l'installation d'un runner self-hosted, devenue inutile depuis
+      que l'école fournit un cluster joignable depuis Internet.
+      `gh secret set KUBE_CONFIG` — le kubeconfig est chiffré côté client
+      avant l'envoi.
+      *Contrôle : pourquoi le runner self-hosted n'est-il plus nécessaire ?
+      Qu'est-ce qui a changé exactement — la puissance, ou le sens du réseau ?*
 - [ ] **6.2 — Job `deploy`** ✍️
-      `runs-on: self-hosted`, `needs: build`, `if:` qui exclut les
-      `pull_request`, `kubectl set image` avec le tag **immuable**, puis
+      `runs-on: ubuntu-24.04`, `needs: build`, `if:` qui exclut les
+      `pull_request`, écriture du kubeconfig depuis `secrets.KUBE_CONFIG`,
+      `kubectl set image` avec le tag **immuable**, puis
       `kubectl rollout status`.
       *Contrôle : pourquoi `kubectl set image` et pas `kubectl apply` ? Pourquoi
       le tag `:dev` ne déclencherait aucun redéploiement ?*
-      *Contrôle sécu : pourquoi ce job ne doit JAMAIS tourner sur une PR quand le
-      repo est public et le runner sur ta machine ?*
+      *Contrôle sécu : pourquoi ne donnerait-on pas un kubeconfig admin à une
+      pipeline en vraie production ? Par quoi le remplacerait-on ?*
 - [ ] **6.3 — Test bout en bout** 🖥️
       Push sur `main` → nouvelle image → pods remplacés → app à jour.
       Puis tag `v1.0.0` → chemin production.
@@ -196,7 +212,8 @@ L'app ne rapporte aucun point. Elle doit juste être **testable** et **buildable
 
 | Risque | Quand ça mord | Parade |
 |---|---|---|
-| PC éteint / runner arrêté le jour J | soutenance | vérifier le runner **avant** de démarrer la démo |
-| Cluster kind détruit au reboot | S2→S3 | savoir le recréer en 2 commandes, documentées dans le README |
+| Cluster école indisponible ou remis à zéro | S2→S3 | garder `rancher-desktop` en contexte de secours ; savoir réappliquer tout `k8s/` en une commande |
+| Quota du cluster partagé atteint (40 pods) | lot 5 | `kubectl delete` ce qui ne sert plus ; `kubectl describe` affiche `exceeded quota` |
+| Kubeconfig commité par erreur | permanent | `*.kubeconfig` dans `.gitignore`, fichier stocké hors du repo dans `~/.kube/` |
 | Webhook Chat commité par erreur | dès le lot 4 | il vit dans les secrets GitHub, jamais dans un fichier |
 | Retard sur le lot 5 (k8s) | S2 | c'est le lot le plus long : ne pas le commencer un jeudi soir |

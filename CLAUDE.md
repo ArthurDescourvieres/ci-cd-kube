@@ -146,8 +146,8 @@ pas du code noté : Claude l'écrit et le maintient lui-même (catégorie 🤖).
 | Stack app | **Node.js 22 + Express + Vitest** | Docker rapide, tests instantanés, image Alpine légère |
 | Registre | **GHCR** (`ghcr.io/<user>/ci-cd-kube`) | Auth native via `GITHUB_TOKEN`, aucun secret à créer |
 | CI/CD | **GitHub Actions** | Imposé par le sujet |
-| Cluster | **k3s via Rancher Desktop**, déjà en place sur la machine | Aucune infra fournie par l'école. Rancher Desktop fournit cluster + `kubectl` + Traefik sans rien installer de plus ; `kind` devient inutile |
-| Accès CD au cluster | **Runner GitHub self-hosted** sur la machine de l'utilisateur | Gratuit, aucun port à ouvrir, aucun kubeconfig à exposer |
+| Cluster | **vcluster `etudiant-01` fourni par l'école** (contexte `vcluster-etudiant-01`, k8s 1.36) | Attribué le 03/09/2026, joignable depuis Internet, ingress-nginx + HTTPS Let's Encrypt automatiques. Rancher Desktop reste en contexte de secours pour tester hors ligne |
+| Accès CD au cluster | **Runner GitHub hébergé + secret `KUBE_CONFIG`** | L'API du cluster école est publique : plus besoin de runner chez soi |
 | Notifications | **Google Chat webhook** | Imposé par le sujet |
 
 ## Comment la CD atteint le cluster (décision structurante)
@@ -155,39 +155,58 @@ pas du code noté : Claude l'écrit et le maintient lui-même (catégorie 🤖).
 Le point dur du sujet : *« automatisation du changement de l'image Docker
 déployée sur Kubernetes après l'exécution de la pipeline »*.
 
-**Le problème n'est pas la puissance de calcul, c'est le sens du réseau.** Les
-runners GitHub tournent dans le cloud Microsoft ; le cluster tourne sur le PC
-de l'utilisateur, derrière une box. Le cloud ne peut pas initier une connexion
-entrante vers cette machine.
+**Le problème n'est pas la puissance de calcul, c'est le sens du réseau.** Un
+runner GitHub tourne dans le cloud Microsoft. Il ne peut déployer que sur un
+cluster dont il peut *initier* la connexion vers l'API server.
 
-**Solution retenue : un runner self-hosted.** L'utilisateur installe l'agent
-GitHub Actions sur sa propre machine. Cet agent se connecte *en sortant* vers
-GitHub et demande du travail (long polling HTTPS). Quand un job lui est
-attribué, il l'exécute localement — donc avec accès direct au cluster kind, et
-sans qu'aucun port n'ait été ouvert.
+**Ce que ça impliquait avant le 3 septembre 2026.** Le seul cluster disponible
+était k3s sur le PC de l'utilisateur, derrière une box : injoignable depuis le
+cloud. La solution retenue était un **runner self-hosted** — un agent installé
+sur la machine, qui se connecte *en sortant* vers GitHub en long polling HTTPS
+et exécute les jobs localement.
 
-Conséquence : **pipeline hybride**, chaque job sur le runner qui a ce dont il a
-besoin.
+**Ce qui a changé.** Le 3 septembre, l'école a attribué à chaque étudiant un
+**vcluster** hébergé et joignable depuis Internet
+(`https://vcluster-etudiant-01.development.atelier.ovh:443`, k8s 1.36). Le
+problème du sens du réseau disparaît : un runner GitHub standard atteint
+directement l'API server.
+
+**Solution retenue : tous les jobs sur `ubuntu-24.04`.** Le job `deploy` reçoit
+le kubeconfig par le secret GitHub `KUBE_CONFIG`, l'écrit dans un fichier
+temporaire du runner, et lance `kubectl`.
 
 | Job | `runs-on` | Pourquoi |
 |---|---|---|
-| `test` | `ubuntu-latest` | N'a besoin que d'Internet. Environnement propre à chaque run |
-| `build` + `push` GHCR | `ubuntu-latest` | Idem : parle à GHCR, pas au cluster |
-| `deploy` | `self-hosted` | Seul job qui a besoin de `kubectl` et du cluster local |
+| `test` | `ubuntu-24.04` | N'a besoin que d'Internet. Environnement propre à chaque run |
+| `build` + `push` GHCR | `ubuntu-24.04` | Parle à GHCR |
+| `deploy` | `ubuntu-24.04` | L'API du cluster est publique : un runner hébergé suffit |
 
-Alternatives écartées (à savoir citer en soutenance) : VPS k3s avec kubeconfig
-en secret (~5 €/mois, ingress public — écarté pour le coût) ; ArgoCD en mode
-GitOps pull (élégant mais une journée d'apprentissage en plus).
+Ce que ce choix fait gagner, et qu'il faut savoir dire en soutenance :
+
+- **plus de dépendance à la machine de l'utilisateur** — le PC peut être éteint,
+  la pipeline déploie quand même ;
+- **plus de runner self-hosted sur un repo public**, qui est un risque de
+  sécurité reconnu (du code venant d'un fork peut s'exécuter sur la machine) ;
+- **environnement de déploiement reproductible** — un runner neuf à chaque run.
+
+Alternatives écartées (à savoir citer) : runner self-hosted (plus nécessaire) ;
+VPS k3s à ~5 €/mois (l'école fournit le cluster) ; ArgoCD en mode GitOps pull
+(élégant, mais une journée d'apprentissage en plus).
 
 ### Contraintes à ne pas oublier
-- Le PC doit être **allumé et le runner démarré** pour que le job `deploy`
-  passe — sinon il reste en attente. À vérifier avant la soutenance.
-- Le repo est **public** : un runner self-hosted y est un risque de sécurité
-  reconnu (du code venant d'un fork pourrait s'exécuter sur la machine).
-  Mitigation obligatoire : le job `deploy` ne doit se déclencher **que** sur
-  `push` vers `main` et sur tags, **jamais** sur `pull_request`.
-- Le kubeconfig reste sur la machine, il n'entre jamais dans le repo ni dans
-  les secrets GitHub.
+- Le kubeconfig **vaut mot de passe**. Il vit dans `~/.kube/`, il est dans le
+  secret GitHub `KUBE_CONFIG`, et il n'apparaît dans **aucun** fichier du repo
+  (`*.kubeconfig` est dans `.gitignore`).
+- Un secret GitHub n'est **pas exposé aux workflows déclenchés par une PR
+  venant d'un fork**. Le job `deploy` reste malgré tout réservé à `push` sur
+  `main` et aux tags : déployer depuis une PR n'aurait aucun sens.
+- En vraie production, on ne donnerait pas un kubeconfig **admin** à une
+  pipeline : on créerait un `ServiceAccount` limité au namespace, avec un
+  `Role` autorisant seulement la mise à jour des deployments. Ici le cluster
+  est un cluster de formation, remis à zéro en fin de module — c'est
+  l'argument à donner si le jury pose la question.
+- Le cluster est **partagé** : quotas (40 pods, 8 Gi garantis), pas de
+  `LoadBalancer`, domaines obligatoirement préfixés `etudiant-01-`.
 
 ## Repo
 
@@ -260,7 +279,7 @@ français — c'est la langue du cursus et de la soutenance.
     `feat/…` par étape, PR vers `main`. Le job `test` se déclenchera aussi sur
     `pull_request`, donc la branche devient utile : elle fait tourner les tests
     sans rien builder ni déployer. Les jobs `build` et `deploy`, eux, restent
-    réservés à `main` et aux tags — voir la section sécurité du runner.
+    réservés à `main` et aux tags — voir la section Sécurité.
 - Tags de release : `vX.Y.Z` (SemVer) → déclenchent le chemin **production**.
 - Commits : conventional commits (`feat:`, `fix:`, `ci:`, `docs:`, `chore:`).
 - **Ne jamais ajouter `Co-Authored-By`** ni auto-référence dans les messages.
@@ -296,7 +315,19 @@ français — c'est la langue du cursus et de la soutenance.
   de pousser 40 commits « fix ci ».
 
 ### Kubernetes
+- Cluster cible : contexte `vcluster-etudiant-01`. `kubectl config use-context`
+  pour basculer entre lui et `rancher-desktop`.
 - Tout dans un namespace dédié (`ci-cd-kube`), pas `default`.
+- `ingressClassName: nginx` (ingress-nginx, installé par l'école) — **pas**
+  `traefik`, qui était le contrôleur de Rancher Desktop.
+- Host d'ingress obligatoirement préfixé `etudiant-01-` :
+  `etudiant-01-ci-cd.development.atelier.ovh`. Un autre préfixe écraserait le
+  site d'un camarade.
+- HTTPS via l'annotation `cert-manager.io/cluster-issuer: letsencrypt` + un
+  bloc `tls:`. Le certificat met 1 à 2 minutes à arriver.
+- Quotas du cluster partagé : 40 pods, 4 CPU / 8 Gi garantis (8 CPU / 16 Gi
+  max), 30 services dont 2 NodePort, **pas de `LoadBalancer`**. StorageClass
+  pour un PVC : `local-path`.
 - Chaque `Deployment` doit avoir : `resources.requests` **et** `limits`,
   `livenessProbe`, `readinessProbe`, `replicas: 2` minimum.
   → c'est exactement la compétence « portabilité, scalabilité, résilience »
@@ -310,11 +341,12 @@ français — c'est la langue du cursus et de la soutenance.
 
 ## Sécurité
 
-- Secret attendu dans GitHub → Settings → Secrets : `GOOGLE_CHAT_WEBHOOK`.
-  `GITHUB_TOKEN` est fourni automatiquement. Pas de `KUBE_CONFIG` : avec le
-  runner self-hosted, le kubeconfig est déjà sur la machine.
-- Job `deploy` : jamais déclenché depuis une `pull_request` (voir la section
-  sur le runner self-hosted).
+- Secrets attendus dans GitHub → Settings → Secrets : `GOOGLE_CHAT_WEBHOOK` et
+  `KUBE_CONFIG` (contenu brut du kubeconfig de l'école). `GITHUB_TOKEN` est
+  fourni automatiquement.
+- Job `deploy` : jamais déclenché depuis une `pull_request`.
+- Le kubeconfig vit dans `~/.kube/`, jamais dans le dossier du repo — une
+  commande `git add -f` mal tapée suffirait à le publier définitivement.
 - **Aucun secret, webhook, kubeconfig ou token ne doit apparaître dans un
   fichier du repo** — le repo est public.
 - Vérifier `.gitignore` avant le premier push : `.env`, `*.kubeconfig`,
@@ -325,7 +357,7 @@ français — c'est la langue du cursus et de la soutenance.
 | Semaine | Objectif |
 |---|---|
 | S1 (31/08 – 05/09) | App Express + tests Vitest, Dockerfile multi-stage, repo public créé, workflow CI (checkout + test + build) vert |
-| S2 (08/09 – 12/09) | Push GHCR avec stratégie de tags, notifications Google Chat succès/échec, cluster kind monté, runner self-hosted installé, manifests k8s appliqués à la main |
+| S2 (08/09 – 12/09) | Push GHCR avec stratégie de tags, notifications Google Chat succès/échec, cluster école connecté, secret `KUBE_CONFIG` posé, manifests k8s appliqués à la main |
 | S3 (15/09 – 18/09) | CD automatisée (mise à jour de l'image), README + schéma, répétition de la démo (dont **une démo d'échec** : test cassé ⇒ pipeline stoppée ⇒ notif d'erreur) |
 
 ## Checklist de rendu
