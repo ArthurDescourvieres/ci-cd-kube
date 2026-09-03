@@ -22,10 +22,5 @@ Thumbs.db
 .idea/
 .vscode/
 
-# Sujet fourni par l'ecole : SUJET.md en reprend le contenu, le PDF reste local
+# Documents fournis par l'ecole : le PDF reste local
 *.pdf
-
-# Doc de travail : vit hors du repo
-CLAUDE.md
-docs/PLAN.md
-docs/SUJET.md
