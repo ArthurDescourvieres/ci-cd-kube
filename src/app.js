@@ -4,7 +4,7 @@ const app = express()
 
 app.get('/', (req, res) => {
       res.json({
-            message: 'CI-CD Kube - Github Actions + Kubernetes pipeline',
+            message: 'CI-CD Kube - Arthur',
             version: process.env.APP_VERSION ?? 'dev',
       })
 })
