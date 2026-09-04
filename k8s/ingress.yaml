@@ -1,0 +1,28 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress # these two first lines identifie this object as the one who contain the ingress config
+metadata:
+  name: ci-cd-kube
+  namespace: ci-cd-kube
+  labels:
+    app: ci-cd-kube
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt # message for the cert manager
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - etudiant-01-ci-cd.development.atelier.ovh
+      secretName: ci-cd-kube-tls # Object where cert manager will put my TLS certificate
+  rules:
+    - host: etudiant-01-ci-cd.development.atelier.ovh
+      http:
+        paths:
+          - path: /
+            pathType: Prefix # Catch any urls who begins with "/" We can also use "Exact"
+            backend:
+              service:
+                name: ci-cd-kube
+                port:
+                  name: http
+
+                  
