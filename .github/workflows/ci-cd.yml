@@ -69,8 +69,19 @@ jobs:
     if: always() && github.event_name == 'push'
     permissions:
       contents: read
+      pull-requests: read
     steps: 
 
+      - name: Find the pull request behind this commit
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh api "repos/$GITHUB_REPOSITORY/commits/$GITHUB_SHA/pulls" \
+            --jq 'if length == 0 then null
+                  else {number: .[0].number, title: .[0].title, url: .[0].html_url}
+                  end' > pr.json
+          cat pr.json
+          
       - name: Send Google Chat notification 
         env: 
           WEBHOOK: ${{ secrets.GOOGLE_CHAT_WEBHOOK }}
