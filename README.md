@@ -137,7 +137,8 @@ Les valeurs retenues
 du pod, pas d'un ordre de grandeur recopié.
 
 Aucun ancien pod n'est supprimé tant qu'un
-nouveau n'est pas prêt. Graçe à readiness et liveness
+nouveau n'est pas prêt. C'est la readiness qui pilote le rolling update ; la
+liveness, elle, redémarre un conteneur déjà en service.
 
 **`ClusterIP` plutôt que `NodePort` ou `LoadBalancer`.** Le Service n'a pas à
 être joignable de l'extérieur : c'est l'Ingress qui expose l'application. 
