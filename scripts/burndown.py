@@ -7,18 +7,39 @@ import sys
 from datetime import date, datetime, timedelta
 
 REPO = "ArthurDescourvieres/ci-cd-kube"
-START = date(2026, 9, 1)
-END = date(2026, 9, 15)  # demo devant le formateur
 
-LOTS = [
-    ("0 - Setup",         1,  3,  1.0),
-    ("1 - App",           4,  8,  2.0),
-    ("2 - Docker",        9, 15,  3.0),
-    ("3 - CI",           16, 21,  4.0),
-    ("4 - Notifications", 22, 25,  2.0),
-    ("5 - Kubernetes",   26, 33,  5.0),
-    ("6 - CD",           34, 37,  3.0),
-    ("7 - Rendu",        38, 41,  3.0),
+CHARTS = [
+    {
+        "nom": "burndown",
+        "titre": "Burn down — CI-CD Kube",
+        "echeance": "la soutenance",
+        "start": date(2026, 9, 1),
+        "end": date(2026, 9, 15),
+        "lots": [
+            ("0 - Setup",         1,  3,  1.0),
+            ("1 - App",           4,  8,  2.0),
+            ("2 - Docker",        9, 15,  3.0),
+            ("3 - CI",           16, 21,  4.0),
+            ("4 - Notifications", 22, 25,  2.0),
+            ("5 - Kubernetes",   26, 33,  5.0),
+            ("6 - CD",           34, 37,  3.0),
+            ("7 - Rendu",        38, 41,  3.0),
+        ],
+    },
+    {
+        "nom": "burndown-bonus",
+        "titre": "Burn down — bonus (hors périmètre du sujet)",
+        "echeance": "le gel du bonus",
+        "start": date(2026, 9, 7),
+        "end": date(2026, 9, 14),
+        "lots": [
+            ("8 - CRUD",       47, 52, 4.5),
+            ("9 - Frontend",   53, 57, 4.0),
+            ("10 - CI multi",  58, 62, 3.5),
+            ("11 - K8s multi", 63, 69, 5.0),
+            ("12 - Sécurité",  70, 74, 2.5),
+        ],
+    },
 ]
 
 W, H = 920, 520
@@ -30,9 +51,9 @@ INK, MUTED, GRID = "#1f2328", "#656d76", "#d8dee4"
 IDEAL, ACTUAL, LATE = "#8c959f", "#1a7f37", "#cf222e"
 
 
-def poids_par_issue():
+def poids_par_issue(lots):
     p = {}
-    for _, lo, hi, heures in LOTS:
+    for _, lo, hi, heures in lots:
         n = hi - lo + 1
         for num in range(lo, hi + 1):
             p[num] = heures / n
@@ -53,71 +74,73 @@ def issues():
     return json.loads(out)
 
 
-def serie_reelle(data, poids):
+def serie_reelle(data, poids, start, end):
     total = sum(poids.values())
     fermees = {}
     for i in data:
-        if i["closedAt"]:
+        if i["closedAt"] and i["number"] in poids:
             d = datetime.fromisoformat(i["closedAt"].replace("Z", "+00:00")).date()
-            d = max(d, START)
             fermees.setdefault(d, 0.0)
-            fermees[d] += poids.get(i["number"], 0.0)
+            fermees[d] += poids[i["number"]]
 
-    aujourdhui = min(date.today(), END)
+    aujourdhui = min(date.today(), end)
     serie, reste = [], total
-    j = START
+    j = start
     while j <= aujourdhui:
-        # le point du jour j vaut le reste au matin : la courbe part donc du
-        # total, comme la droite ideale, et chaque journee se lit comme une
-        # marche descendante.
-        serie.append((j, round(reste, 3)))
         reste -= fermees.get(j, 0.0)
+        serie.append((j, round(reste, 3)))
         j += timedelta(days=1)
-    serie.append((aujourdhui, round(reste, 3)))
     return total, serie
 
 
-def x(j):
-    return M["l"] + PLOT_W * ((j - START).days / max((END - START).days, 1))
+def x(j, cfg):
+    span = max((cfg["end"] - cfg["start"]).days, 1)
+    return M["l"] + PLOT_W * ((j - cfg["start"]).days / span)
 
 
 def y(v, total):
     return M["t"] + PLOT_H * (1 - v / total) if total else M["t"] + PLOT_H
 
 
-def svg(total, serie):
+def svg(cfg, total, serie):
+    start, end = cfg["start"], cfg["end"]
     s = [
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" '
         f'viewBox="0 0 {W} {H}" font-family="Segoe UI, Helvetica, Arial, sans-serif">',
         f'<rect width="{W}" height="{H}" fill="#ffffff"/>',
         f'<text x="{M["l"]}" y="30" font-size="19" font-weight="600" fill="{INK}">'
-        f'Burn down — CI-CD Kube</text>',
+        f'{cfg["titre"]}</text>',
     ]
 
     reste = serie[-1][1] if serie else total
     fait = total - reste
-    jours = (END - date.today()).days
+    jours = (end - date.today()).days
     s.append(
         f'<text x="{M["l"]}" y="50" font-size="12.5" fill="{MUTED}">'
-        f'{fait:.1f} h faites sur {total:.0f} h · {reste:.1f} h restantes · '
-        f'{jours} jours avant la soutenance</text>'
+        f'{fait:.1f} h faites sur {total:g} h · {reste:.1f} h restantes · '
+        f'{jours} jours avant {cfg["echeance"]}</text>'
     )
 
     pas = 5
-    v = 0
+    graduations = []
+    v = 0.0
     while v <= total + 0.01:
+        graduations.append(v)
+        v += pas
+    if total - graduations[-1] > 0.01:
+        graduations.append(total)
+
+    for v in graduations:
         yy = y(v, total)
         s.append(f'<line x1="{M["l"]}" y1="{yy:.1f}" x2="{M["l"]+PLOT_W}" '
                  f'y2="{yy:.1f}" stroke="{GRID}" stroke-width="1"/>')
         s.append(f'<text x="{M["l"]-10}" y="{yy+4:.1f}" font-size="11.5" '
-                 f'fill="{MUTED}" text-anchor="end">{v:.0f} h</text>')
-        v += pas
+                 f'fill="{MUTED}" text-anchor="end">{v:g} h</text>')
 
-    j = START
-    while j <= END:
-        xx = x(j)
-        weekend = j.weekday() >= 5
-        if weekend:
+    j = start
+    while j <= end:
+        xx = x(j, cfg)
+        if j.weekday() >= 5:
             s.append(f'<rect x="{xx-6:.1f}" y="{M["t"]}" width="12" '
                      f'height="{PLOT_H}" fill="#f6f8fa"/>')
         s.append(f'<line x1="{xx:.1f}" y1="{M["t"]}" x2="{xx:.1f}" '
@@ -126,31 +149,31 @@ def svg(total, serie):
                  f'fill="{MUTED}" text-anchor="middle">{j.strftime("%d/%m")}</text>')
         j += timedelta(days=1)
 
-    s.append(f'<line x1="{x(START):.1f}" y1="{y(total,total):.1f}" '
-             f'x2="{x(END):.1f}" y2="{y(0,total):.1f}" stroke="{IDEAL}" '
+    s.append(f'<line x1="{x(start, cfg):.1f}" y1="{y(total,total):.1f}" '
+             f'x2="{x(end, cfg):.1f}" y2="{y(0,total):.1f}" stroke="{IDEAL}" '
              f'stroke-width="2" stroke-dasharray="6 5"/>')
 
     if serie:
         pts, prev = [], None
         for j, v in serie:
             if prev is not None:
-                pts.append(f"{x(j):.1f},{y(prev,total):.1f}")
-            pts.append(f"{x(j):.1f},{y(v,total):.1f}")
+                pts.append(f"{x(j, cfg):.1f},{y(prev,total):.1f}")
+            pts.append(f"{x(j, cfg):.1f},{y(v,total):.1f}")
             prev = v
-        en_retard = serie[-1][1] > total * (1 - (date.today()-START).days /
-                                            max((END-START).days, 1)) + 0.01
+        ecoule = (date.today() - start).days / max((end - start).days, 1)
+        en_retard = serie[-1][1] > total * (1 - ecoule) + 0.01
         col = LATE if en_retard else ACTUAL
         s.append(f'<polyline points="{" ".join(pts)}" fill="none" '
                  f'stroke="{col}" stroke-width="2.5" stroke-linejoin="round"/>')
         jd, vd = serie[-1]
-        s.append(f'<circle cx="{x(jd):.1f}" cy="{y(vd,total):.1f}" r="4.5" '
+        s.append(f'<circle cx="{x(jd, cfg):.1f}" cy="{y(vd,total):.1f}" r="4.5" '
                  f'fill="{col}"/>')
 
     ly = H - 26
     s.append(f'<line x1="{M["l"]}" y1="{ly}" x2="{M["l"]+26}" y2="{ly}" '
              f'stroke="{IDEAL}" stroke-width="2" stroke-dasharray="6 5"/>')
     s.append(f'<text x="{M["l"]+34}" y="{ly+4}" font-size="12" fill="{MUTED}">'
-             f'idéal (rythme constant jusqu\'au {END:%d/%m})</text>')
+             f'idéal (rythme constant jusqu\'au {end:%d/%m})</text>')
     s.append(f'<line x1="{M["l"]+280}" y1="{ly}" x2="{M["l"]+306}" y2="{ly}" '
              f'stroke="{ACTUAL}" stroke-width="2.5"/>')
     s.append(f'<text x="{M["l"]+314}" y="{ly+4}" font-size="12" fill="{MUTED}">'
@@ -179,20 +202,22 @@ def main():
     racine = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     docs = os.path.join(racine, "docs")
     os.makedirs(docs, exist_ok=True)
+    data = issues()
 
-    poids = poids_par_issue()
-    total, serie = serie_reelle(issues(), poids)
+    for cfg in CHARTS:
+        poids = poids_par_issue(cfg["lots"])
+        total, serie = serie_reelle(data, poids, cfg["start"], cfg["end"])
 
-    svg_path = os.path.join(docs, "burndown.svg")
-    png_path = os.path.join(docs, "burndown.png")
-    with open(svg_path, "w", encoding="utf-8") as f:
-        f.write(svg(total, serie))
-    ok = en_png(svg_path, png_path)
+        svg_path = os.path.join(docs, cfg["nom"] + ".svg")
+        png_path = os.path.join(docs, cfg["nom"] + ".png")
+        with open(svg_path, "w", encoding="utf-8") as f:
+            f.write(svg(cfg, total, serie))
+        ok = en_png(svg_path, png_path)
 
-    reste = serie[-1][1] if serie else total
-    print(f"docs/burndown.svg écrit — reste {reste:.1f} h sur {total:.0f} h")
-    if ok:
-        print("docs/burndown.png écrit")
+        reste = serie[-1][1] if serie else total
+        print(f"docs/{cfg['nom']}.svg écrit — reste {reste:.1f} h sur {total:g} h")
+        if ok:
+            print(f"docs/{cfg['nom']}.png écrit")
 
 
 if __name__ == "__main__":
