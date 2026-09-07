@@ -64,7 +64,7 @@ jobs:
 
   notify:
     name: CI Google Chat notification
-    needs: [test, build]
+    needs: [test, build, deploy]
     runs-on: ubuntu-24.04
     if: always() && github.event_name == 'push'
     permissions:
@@ -84,3 +84,34 @@ jobs:
             -d "{\"text\": \"$MESSAGE\"}"
         # The message will be : CI/CD SUCCESS - ci-cd-kube commit cc1a23c by ArthurDescourvieres open the run
 
+  deploy:
+    name: CD Kubernetes
+    needs: build
+    runs-on: ubuntu-24.04
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+    steps:
+
+      - name: Write the kubeconfig
+        env:
+          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+        run: |
+          mkdir -p ~/.kube
+          printf '%s' "$KUBE_CONFIG" > ~/.kube/config
+          chmod 600 ~/.kube/config
+        # read and write
+
+      - name: Deploy the new image
+        env:
+          IMAGE: ghcr.io/arthurdescourvieres/ci-cd-kube
+        run: |
+          kubectl set image deployment/ci-cd-kube \
+            app=$IMAGE:sha-${GITHUB_SHA:0:7} \
+            -n ci-cd-kube
+
+      - name: Wait for the rollout
+        run: |
+          kubectl rollout status deployment/ci-cd-kube \
+            -n ci-cd-kube \
+            --timeout=120s
