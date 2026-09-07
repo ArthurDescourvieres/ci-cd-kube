@@ -47,7 +47,7 @@
 <line x1="896.0" y1="64" x2="896.0" y2="442" stroke="#d8dee4" stroke-width="1"/>
 <text x="896.0" y="460" font-size="10.5" fill="#656d76" text-anchor="middle">15/09</text>
 <line x1="62.0" y1="64.0" x2="896.0" y2="442.0" stroke="#8c959f" stroke-width="2" stroke-dasharray="6 5"/>
-<polyline points="62.0,205.1 121.6,205.1 121.6,292.0 181.1,292.0 181.1,314.6 240.7,314.6 240.7,345.4 300.3,345.4 300.3,345.4 359.9,345.4 359.9,345.4 419.4,345.4 419.4,394.8" fill="none" stroke="#1a7f37" stroke-width="2.5" stroke-linejoin="round"/>
+<polyline points="62.0,64.0 121.6,64.0 121.6,205.1 181.1,205.1 181.1,292.0 240.7,292.0 240.7,314.6 300.3,314.6 300.3,345.4 359.9,345.4 359.9,345.4 419.4,345.4 419.4,345.4 419.4,345.4 419.4,394.8" fill="none" stroke="#1a7f37" stroke-width="2.5" stroke-linejoin="round"/>
 <circle cx="419.4" cy="394.8" r="4.5" fill="#1a7f37"/>
 <line x1="62" y1="494" x2="88" y2="494" stroke="#8c959f" stroke-width="2" stroke-dasharray="6 5"/>
 <text x="96" y="498" font-size="12" fill="#656d76">idéal (rythme constant jusqu'au 15/09)</text>
