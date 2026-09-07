@@ -80,6 +80,7 @@ def serie_reelle(data, poids, start, end):
     for i in data:
         if i["closedAt"] and i["number"] in poids:
             d = datetime.fromisoformat(i["closedAt"].replace("Z", "+00:00")).date()
+            d = max(d, start)
             fermees.setdefault(d, 0.0)
             fermees[d] += poids[i["number"]]
 
@@ -87,9 +88,13 @@ def serie_reelle(data, poids, start, end):
     serie, reste = [], total
     j = start
     while j <= aujourdhui:
-        reste -= fermees.get(j, 0.0)
+        # le point du jour j vaut le reste au matin : la courbe part donc du
+        # total, comme la droite ideale, et chaque journee se lit comme une
+        # marche descendante.
         serie.append((j, round(reste, 3)))
+        reste -= fermees.get(j, 0.0)
         j += timedelta(days=1)
+    serie.append((aujourdhui, round(reste, 3)))
     return total, serie
 
 

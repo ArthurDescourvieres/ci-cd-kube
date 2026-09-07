@@ -31,7 +31,7 @@
 <line x1="896.0" y1="64" x2="896.0" y2="442" stroke="#d8dee4" stroke-width="1"/>
 <text x="896.0" y="460" font-size="10.5" fill="#656d76" text-anchor="middle">14/09</text>
 <line x1="62.0" y1="64.0" x2="896.0" y2="442.0" stroke="#8c959f" stroke-width="2" stroke-dasharray="6 5"/>
-<polyline points="62.0,64.0" fill="none" stroke="#1a7f37" stroke-width="2.5" stroke-linejoin="round"/>
+<polyline points="62.0,64.0 62.0,64.0 62.0,64.0" fill="none" stroke="#1a7f37" stroke-width="2.5" stroke-linejoin="round"/>
 <circle cx="62.0" cy="64.0" r="4.5" fill="#1a7f37"/>
 <line x1="62" y1="494" x2="88" y2="494" stroke="#8c959f" stroke-width="2" stroke-dasharray="6 5"/>
 <text x="96" y="498" font-size="12" fill="#656d76">idéal (rythme constant jusqu'au 14/09)</text>
