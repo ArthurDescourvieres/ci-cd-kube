@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="920" height="520" viewBox="0 0 920 520" font-family="Segoe UI, Helvetica, Arial, sans-serif">
 <rect width="920" height="520" fill="#ffffff"/>
 <text x="62" y="30" font-size="19" font-weight="600" fill="#1f2328">Burn down — CI-CD Kube</text>
-<text x="62" y="50" font-size="12.5" fill="#656d76">18.6 h faites sur 23 h · 4.4 h restantes · 11 jours avant la soutenance</text>
+<text x="62" y="50" font-size="12.5" fill="#656d76">18.6 h faites sur 23 h · 4.4 h restantes · 8 jours avant la soutenance</text>
 <line x1="62" y1="442.0" x2="896" y2="442.0" stroke="#d8dee4" stroke-width="1"/>
 <text x="52" y="446.0" font-size="11.5" fill="#656d76" text-anchor="end">0 h</text>
 <line x1="62" y1="359.8" x2="896" y2="359.8" stroke="#d8dee4" stroke-width="1"/>
@@ -14,49 +14,43 @@
 <text x="52" y="117.3" font-size="11.5" fill="#656d76" text-anchor="end">20 h</text>
 <line x1="62.0" y1="64" x2="62.0" y2="442" stroke="#d8dee4" stroke-width="1"/>
 <text x="62.0" y="460" font-size="10.5" fill="#656d76" text-anchor="middle">01/09</text>
-<line x1="111.1" y1="64" x2="111.1" y2="442" stroke="#d8dee4" stroke-width="1"/>
-<text x="111.1" y="460" font-size="10.5" fill="#656d76" text-anchor="middle">02/09</text>
-<line x1="160.1" y1="64" x2="160.1" y2="442" stroke="#d8dee4" stroke-width="1"/>
-<text x="160.1" y="460" font-size="10.5" fill="#656d76" text-anchor="middle">03/09</text>
-<line x1="209.2" y1="64" x2="209.2" y2="442" stroke="#d8dee4" stroke-width="1"/>
-<text x="209.2" y="460" font-size="10.5" fill="#656d76" text-anchor="middle">04/09</text>
-<rect x="252.2" y="64" width="12" height="378" fill="#f6f8fa"/>
-<line x1="258.2" y1="64" x2="258.2" y2="442" stroke="#d8dee4" stroke-width="1"/>
-<text x="258.2" y="460" font-size="10.5" fill="#656d76" text-anchor="middle">05/09</text>
-<rect x="301.3" y="64" width="12" height="378" fill="#f6f8fa"/>
-<line x1="307.3" y1="64" x2="307.3" y2="442" stroke="#d8dee4" stroke-width="1"/>
-<text x="307.3" y="460" font-size="10.5" fill="#656d76" text-anchor="middle">06/09</text>
-<line x1="356.4" y1="64" x2="356.4" y2="442" stroke="#d8dee4" stroke-width="1"/>
-<text x="356.4" y="460" font-size="10.5" fill="#656d76" text-anchor="middle">07/09</text>
-<line x1="405.4" y1="64" x2="405.4" y2="442" stroke="#d8dee4" stroke-width="1"/>
-<text x="405.4" y="460" font-size="10.5" fill="#656d76" text-anchor="middle">08/09</text>
-<line x1="454.5" y1="64" x2="454.5" y2="442" stroke="#d8dee4" stroke-width="1"/>
-<text x="454.5" y="460" font-size="10.5" fill="#656d76" text-anchor="middle">09/09</text>
-<line x1="503.5" y1="64" x2="503.5" y2="442" stroke="#d8dee4" stroke-width="1"/>
-<text x="503.5" y="460" font-size="10.5" fill="#656d76" text-anchor="middle">10/09</text>
-<line x1="552.6" y1="64" x2="552.6" y2="442" stroke="#d8dee4" stroke-width="1"/>
-<text x="552.6" y="460" font-size="10.5" fill="#656d76" text-anchor="middle">11/09</text>
-<rect x="595.6" y="64" width="12" height="378" fill="#f6f8fa"/>
-<line x1="601.6" y1="64" x2="601.6" y2="442" stroke="#d8dee4" stroke-width="1"/>
-<text x="601.6" y="460" font-size="10.5" fill="#656d76" text-anchor="middle">12/09</text>
-<rect x="644.7" y="64" width="12" height="378" fill="#f6f8fa"/>
-<line x1="650.7" y1="64" x2="650.7" y2="442" stroke="#d8dee4" stroke-width="1"/>
-<text x="650.7" y="460" font-size="10.5" fill="#656d76" text-anchor="middle">13/09</text>
-<line x1="699.8" y1="64" x2="699.8" y2="442" stroke="#d8dee4" stroke-width="1"/>
-<text x="699.8" y="460" font-size="10.5" fill="#656d76" text-anchor="middle">14/09</text>
-<line x1="748.8" y1="64" x2="748.8" y2="442" stroke="#d8dee4" stroke-width="1"/>
-<text x="748.8" y="460" font-size="10.5" fill="#656d76" text-anchor="middle">15/09</text>
-<line x1="797.9" y1="64" x2="797.9" y2="442" stroke="#d8dee4" stroke-width="1"/>
-<text x="797.9" y="460" font-size="10.5" fill="#656d76" text-anchor="middle">16/09</text>
-<line x1="846.9" y1="64" x2="846.9" y2="442" stroke="#d8dee4" stroke-width="1"/>
-<text x="846.9" y="460" font-size="10.5" fill="#656d76" text-anchor="middle">17/09</text>
+<line x1="121.6" y1="64" x2="121.6" y2="442" stroke="#d8dee4" stroke-width="1"/>
+<text x="121.6" y="460" font-size="10.5" fill="#656d76" text-anchor="middle">02/09</text>
+<line x1="181.1" y1="64" x2="181.1" y2="442" stroke="#d8dee4" stroke-width="1"/>
+<text x="181.1" y="460" font-size="10.5" fill="#656d76" text-anchor="middle">03/09</text>
+<line x1="240.7" y1="64" x2="240.7" y2="442" stroke="#d8dee4" stroke-width="1"/>
+<text x="240.7" y="460" font-size="10.5" fill="#656d76" text-anchor="middle">04/09</text>
+<rect x="294.3" y="64" width="12" height="378" fill="#f6f8fa"/>
+<line x1="300.3" y1="64" x2="300.3" y2="442" stroke="#d8dee4" stroke-width="1"/>
+<text x="300.3" y="460" font-size="10.5" fill="#656d76" text-anchor="middle">05/09</text>
+<rect x="353.9" y="64" width="12" height="378" fill="#f6f8fa"/>
+<line x1="359.9" y1="64" x2="359.9" y2="442" stroke="#d8dee4" stroke-width="1"/>
+<text x="359.9" y="460" font-size="10.5" fill="#656d76" text-anchor="middle">06/09</text>
+<line x1="419.4" y1="64" x2="419.4" y2="442" stroke="#d8dee4" stroke-width="1"/>
+<text x="419.4" y="460" font-size="10.5" fill="#656d76" text-anchor="middle">07/09</text>
+<line x1="479.0" y1="64" x2="479.0" y2="442" stroke="#d8dee4" stroke-width="1"/>
+<text x="479.0" y="460" font-size="10.5" fill="#656d76" text-anchor="middle">08/09</text>
+<line x1="538.6" y1="64" x2="538.6" y2="442" stroke="#d8dee4" stroke-width="1"/>
+<text x="538.6" y="460" font-size="10.5" fill="#656d76" text-anchor="middle">09/09</text>
+<line x1="598.1" y1="64" x2="598.1" y2="442" stroke="#d8dee4" stroke-width="1"/>
+<text x="598.1" y="460" font-size="10.5" fill="#656d76" text-anchor="middle">10/09</text>
+<line x1="657.7" y1="64" x2="657.7" y2="442" stroke="#d8dee4" stroke-width="1"/>
+<text x="657.7" y="460" font-size="10.5" fill="#656d76" text-anchor="middle">11/09</text>
+<rect x="711.3" y="64" width="12" height="378" fill="#f6f8fa"/>
+<line x1="717.3" y1="64" x2="717.3" y2="442" stroke="#d8dee4" stroke-width="1"/>
+<text x="717.3" y="460" font-size="10.5" fill="#656d76" text-anchor="middle">12/09</text>
+<rect x="770.9" y="64" width="12" height="378" fill="#f6f8fa"/>
+<line x1="776.9" y1="64" x2="776.9" y2="442" stroke="#d8dee4" stroke-width="1"/>
+<text x="776.9" y="460" font-size="10.5" fill="#656d76" text-anchor="middle">13/09</text>
+<line x1="836.4" y1="64" x2="836.4" y2="442" stroke="#d8dee4" stroke-width="1"/>
+<text x="836.4" y="460" font-size="10.5" fill="#656d76" text-anchor="middle">14/09</text>
 <line x1="896.0" y1="64" x2="896.0" y2="442" stroke="#d8dee4" stroke-width="1"/>
-<text x="896.0" y="460" font-size="10.5" fill="#656d76" text-anchor="middle">18/09</text>
+<text x="896.0" y="460" font-size="10.5" fill="#656d76" text-anchor="middle">15/09</text>
 <line x1="62.0" y1="64.0" x2="896.0" y2="442.0" stroke="#8c959f" stroke-width="2" stroke-dasharray="6 5"/>
-<polyline points="62.0,205.1 111.1,205.1 111.1,292.0 160.1,292.0 160.1,314.6 209.2,314.6 209.2,345.4 258.2,345.4 258.2,345.4 307.3,345.4 307.3,345.4 356.4,345.4 356.4,370.1" fill="none" stroke="#1a7f37" stroke-width="2.5" stroke-linejoin="round"/>
-<circle cx="356.4" cy="370.1" r="4.5" fill="#1a7f37"/>
+<polyline points="62.0,205.1 121.6,205.1 121.6,292.0 181.1,292.0 181.1,314.6 240.7,314.6 240.7,345.4 300.3,345.4 300.3,345.4 359.9,345.4 359.9,345.4 419.4,345.4 419.4,370.1" fill="none" stroke="#1a7f37" stroke-width="2.5" stroke-linejoin="round"/>
+<circle cx="419.4" cy="370.1" r="4.5" fill="#1a7f37"/>
 <line x1="62" y1="494" x2="88" y2="494" stroke="#8c959f" stroke-width="2" stroke-dasharray="6 5"/>
-<text x="96" y="498" font-size="12" fill="#656d76">idéal (rythme constant jusqu'au 18/09)</text>
+<text x="96" y="498" font-size="12" fill="#656d76">idéal (rythme constant jusqu'au 15/09)</text>
 <line x1="342" y1="494" x2="368" y2="494" stroke="#1a7f37" stroke-width="2.5"/>
 <text x="376" y="498" font-size="12" fill="#656d76">réel (issues fermées, pondérées en heures)</text>
 </svg>

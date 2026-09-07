@@ -8,7 +8,7 @@ from datetime import date, datetime, timedelta
 
 REPO = "ArthurDescourvieres/ci-cd-kube"
 START = date(2026, 9, 1)
-END = date(2026, 9, 18)  # soutenance
+END = date(2026, 9, 15)  # demo devant le formateur
 
 LOTS = [
     ("0 - Setup",         1,  3,  1.0),
@@ -145,7 +145,7 @@ def svg(total, serie):
     s.append(f'<line x1="{M["l"]}" y1="{ly}" x2="{M["l"]+26}" y2="{ly}" '
              f'stroke="{IDEAL}" stroke-width="2" stroke-dasharray="6 5"/>')
     s.append(f'<text x="{M["l"]+34}" y="{ly+4}" font-size="12" fill="{MUTED}">'
-             f'idéal (rythme constant jusqu\'au 18/09)</text>')
+             f'idéal (rythme constant jusqu\'au {END:%d/%m})</text>')
     s.append(f'<line x1="{M["l"]+280}" y1="{ly}" x2="{M["l"]+306}" y2="{ly}" '
              f'stroke="{ACTUAL}" stroke-width="2.5"/>')
     s.append(f'<text x="{M["l"]+314}" y="{ly+4}" font-size="12" fill="{MUTED}">'
