@@ -86,14 +86,24 @@ jobs:
         env: 
           WEBHOOK: ${{ secrets.GOOGLE_CHAT_WEBHOOK }}
           STATUS: ${{ contains(needs.*.result, 'failure') && 'FAILURE' || 'SUCCESS' }}
-          AUTHOR: ${{ github.actor }}
-          RUN_URL: ${{ github.server_url }}/${{ github.repository}}/actions/runs/${{ github.run_id }}
         run: |
-          MESSAGE="*CI/CD $STATUS* - ci-cd-kube\ncommit ${GITHUB_SHA:0:7} by $AUTHOR\n<$RUN_URL|open the run>"
-          curl -sS -X POST "$WEBHOOK" \
+            jq -n \
+            --arg status "$STATUS" \
+            --arg sha "${GITHUB_SHA:0:7}" \
+            --arg author "$GITHUB_ACTOR" \
+            --arg run_url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
+            --slurpfile pr pr.json \
+            '{ text: (
+                 "*CI/CD \($status)* — ci-cd-kube\n"
+               + "commit \($sha) par \($author)\n"
+               + (if $pr[0] == null
+                  then "push direct sur main\n"
+                  else "PR #\($pr[0].number) — \($pr[0].title)\n" end)
+               + "<\($run_url)|ouvrir le run>"
+               ) }' > payload.json
+            curl -sS --fail-with-body -X POST "$WEBHOOK" \
             -H 'Content-Type: application/json' \
-            -d "{\"text\": \"$MESSAGE\"}"
-        # The message will be : CI/CD SUCCESS - ci-cd-kube commit cc1a23c by ArthurDescourvieres open the run
+            -d @payload.json
 
   deploy:
     name: CD Kubernetes
