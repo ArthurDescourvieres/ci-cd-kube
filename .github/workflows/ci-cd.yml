@@ -78,7 +78,6 @@ jobs:
             --jq 'if length == 0 then null
                   else {number: .[0].number, title: .[0].title, url: .[0].html_url}
                   end' > pr.json
-          cat pr.json
 
       - name: Send Google Chat notification
         env:
