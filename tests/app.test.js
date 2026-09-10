@@ -6,7 +6,7 @@ describe('GET /', () => {
   it('responds 200 with a message and a version', async () => {
     const res = await request(app).get('/')
 
-    expect(res.status).toBe(500)
+    expect(res.status).toBe(200)
     expect(res.body.message).toContain('CI-CD Kube')
     expect(res.body).toHaveProperty('version')
   })
