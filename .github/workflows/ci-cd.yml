@@ -3,13 +3,12 @@ name: CI/CD
 on:
   push:
     branches: [main]
-    tags: ['v*.*.*']
+    tags: ["v*.*.*"]
     paths-ignore:
-      - 'docs/**'
-      - '**.md'
+      - "docs/**"
+      - "**.md"
   pull_request:
     branches: [main]
-  
 
 jobs:
   test:
@@ -70,8 +69,7 @@ jobs:
     permissions:
       contents: read
       pull-requests: read
-    steps: 
-
+    steps:
       - name: Find the pull request behind this commit
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -81,29 +79,40 @@ jobs:
                   else {number: .[0].number, title: .[0].title, url: .[0].html_url}
                   end' > pr.json
           cat pr.json
-          
-      - name: Send Google Chat notification 
-        env: 
+
+      - name: Send Google Chat notification
+        env:
           WEBHOOK: ${{ secrets.GOOGLE_CHAT_WEBHOOK }}
-          STATUS: ${{ contains(needs.*.result, 'failure') && 'FAILURE' || 'SUCCESS' }}
+          NEEDS: ${{ toJSON(needs) }} 
+        #   *CI/CD SUCCESS* — ci-cd-kube
+        #   commit ce5c88c by ArthurDescourvieres
+        #   PR #82 — the pull request title     (or "pushed directly to main")
+        #   failed: test (failure)              (line absent when everything is green)
+        #   <run url|open the run>
         run: |
-            jq -n \
-            --arg status "$STATUS" \
-            --arg sha "${GITHUB_SHA:0:7}" \
-            --arg author "$GITHUB_ACTOR" \
-            --arg run_url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
-            --slurpfile pr pr.json \
-            '{ text: (
-                 "*CI/CD \($status)* — ci-cd-kube\n"
-               + "commit \($sha) par \($author)\n"
-               + (if $pr[0] == null
-                  then "push direct sur main\n"
-                  else "PR #\($pr[0].number) — \($pr[0].title)\n" end)
-               + "<\($run_url)|ouvrir le run>"
-               ) }' > payload.json
-            curl -sS --fail-with-body -X POST "$WEBHOOK" \
-            -H 'Content-Type: application/json' \
-            -d @payload.json
+          jq -n \
+          --argjson needs "$NEEDS" \
+          --arg sha "${GITHUB_SHA:0:7}" \
+          --arg author "$GITHUB_ACTOR" \
+          --arg run_url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
+          --slurpfile pr pr.json \
+            '($needs | to_entries
+            | map(select(.value.result != "success"
+                     and .value.result != "skipped"))) as $ko
+           | { text: (
+               "*CI/CD \(if $ko == [] then "SUCCESS" else "FAILURE" end)* — ci-cd-kube\n"
+             + "commit \($sha) by \($author)\n"
+             + (if $pr[0] == null
+                then "pushed directly to main\n"
+                else "PR #\($pr[0].number) — \($pr[0].title)\n" end)
+             + (if $ko == [] then ""
+                else "failed: "
+                   + ($ko | map("\(.key) (\(.value.result))") | join(", ")) + "\n" end)
+             + "<\($run_url)|open the run>"
+             ) }' > payload.json
+          curl -sS --fail-with-body -X POST "$WEBHOOK" \
+          -H 'Content-Type: application/json' \
+          -d @payload.json
 
   deploy:
     name: CD Kubernetes
@@ -113,7 +122,6 @@ jobs:
     permissions:
       contents: read
     steps:
-
       - name: Write the kubeconfig
         env:
           KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
