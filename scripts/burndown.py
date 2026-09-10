@@ -29,9 +29,9 @@ CHARTS = [
     {
         "nom": "burndown-bonus",
         "titre": "Burn down — bonus (hors périmètre du sujet)",
-        "echeance": "le gel du bonus",
+        "echeance": "le gel de la pipeline",
         "start": date(2026, 9, 7),
-        "end": date(2026, 9, 14),
+        "end": date(2026, 9, 13),
         "lots": [
             ("8 - CRUD",       47, 52, 4.5),
             ("9 - Frontend",   53, 57, 4.0),
@@ -39,6 +39,7 @@ CHARTS = [
             ("11 - K8s multi", 63, 69, 5.0),
             ("12 - Sécurité",  70, 74, 2.5),
             ("13 - Notif riche", 75, 80, 2.5),
+            ("14 - RBAC",      85, 88, 1.5),
         ],
     },
 ]
@@ -69,7 +70,7 @@ def gh_bin():
 def issues():
     out = subprocess.run(
         [gh_bin(), "issue", "list", "--repo", REPO, "--state", "all",
-         "--limit", "200", "--json", "number,closedAt,state,stateReason"],
+         "--limit", "200", "--json", "number,closedAt,state,stateReason,labels"],
         capture_output=True, text=True, encoding="utf-8", check=True,
     ).stdout
     return json.loads(out)
@@ -108,7 +109,7 @@ def y(v, total):
     return M["t"] + PLOT_H * (1 - v / total) if total else M["t"] + PLOT_H
 
 
-def svg(cfg, total, serie, abandon=0.0):
+def svg(cfg, total, serie, abandon=0.0, reporte=0.0):
     start, end = cfg["start"], cfg["end"]
     s = [
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" '
@@ -121,7 +122,8 @@ def svg(cfg, total, serie, abandon=0.0):
     reste = serie[-1][1] if serie else total
     fait = total - reste
     jours = (end - date.today()).days
-    retire = f' · {abandon:.1f} h retirées du périmètre' if abandon else ''
+    retire = ((f' · {abandon:.1f} h abandonnées' if abandon else '')
+              + (f' · {reporte:.1f} h reportées' if reporte else ''))
     s.append(
         f'<text x="{M["l"]}" y="50" font-size="12.5" fill="{MUTED}">'
         f'{fait:.1f} h faites sur {total:.1f} h · {reste:.1f} h restantes · '
@@ -213,17 +215,20 @@ def main():
     # une issue fermee "not planned" sort du perimetre : elle ne doit pas
     # compter comme du travail fait.
     abandonnees = {i["number"] for i in data if i.get("stateReason") == "NOT_PLANNED"}
+    reportees = {i["number"] for i in data
+                 if any(l["name"] == "apres-soutenance" for l in i.get("labels", []))}
 
     for cfg in CHARTS:
         tous = poids_par_issue(cfg["lots"])
-        poids = {n: p for n, p in tous.items() if n not in abandonnees}
-        abandon = sum(tous.values()) - sum(poids.values())
+        poids = {n: p for n, p in tous.items() if n not in abandonnees | reportees}
+        abandon = sum(p for n, p in tous.items() if n in abandonnees)
+        reporte = sum(p for n, p in tous.items() if n in reportees - abandonnees)
         total, serie = serie_reelle(data, poids, cfg["start"], cfg["end"])
 
         svg_path = os.path.join(docs, cfg["nom"] + ".svg")
         png_path = os.path.join(docs, cfg["nom"] + ".png")
         with open(svg_path, "w", encoding="utf-8") as f:
-            f.write(svg(cfg, total, serie, abandon))
+            f.write(svg(cfg, total, serie, abandon, reporte))
         ok = en_png(svg_path, png_path)
 
         reste = serie[-1][1] if serie else total
