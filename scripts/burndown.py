@@ -69,7 +69,7 @@ def gh_bin():
 def issues():
     out = subprocess.run(
         [gh_bin(), "issue", "list", "--repo", REPO, "--state", "all",
-         "--limit", "200", "--json", "number,closedAt,state"],
+         "--limit", "200", "--json", "number,closedAt,state,stateReason"],
         capture_output=True, text=True, encoding="utf-8", check=True,
     ).stdout
     return json.loads(out)
@@ -108,7 +108,7 @@ def y(v, total):
     return M["t"] + PLOT_H * (1 - v / total) if total else M["t"] + PLOT_H
 
 
-def svg(cfg, total, serie):
+def svg(cfg, total, serie, abandon=0.0):
     start, end = cfg["start"], cfg["end"]
     s = [
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" '
@@ -121,10 +121,11 @@ def svg(cfg, total, serie):
     reste = serie[-1][1] if serie else total
     fait = total - reste
     jours = (end - date.today()).days
+    retire = f' · {abandon:.1f} h retirées du périmètre' if abandon else ''
     s.append(
         f'<text x="{M["l"]}" y="50" font-size="12.5" fill="{MUTED}">'
-        f'{fait:.1f} h faites sur {total:g} h · {reste:.1f} h restantes · '
-        f'{jours} jours avant {cfg["echeance"]}</text>'
+        f'{fait:.1f} h faites sur {total:.1f} h · {reste:.1f} h restantes · '
+        f'{jours} jours avant {cfg["echeance"]}{retire}</text>'
     )
 
     pas = 5
@@ -141,7 +142,7 @@ def svg(cfg, total, serie):
         s.append(f'<line x1="{M["l"]}" y1="{yy:.1f}" x2="{M["l"]+PLOT_W}" '
                  f'y2="{yy:.1f}" stroke="{GRID}" stroke-width="1"/>')
         s.append(f'<text x="{M["l"]-10}" y="{yy+4:.1f}" font-size="11.5" '
-                 f'fill="{MUTED}" text-anchor="end">{v:g} h</text>')
+                 f'fill="{MUTED}" text-anchor="end">{round(v, 1):g} h</text>')
 
     j = start
     while j <= end:
@@ -209,19 +210,24 @@ def main():
     docs = os.path.join(racine, "docs")
     os.makedirs(docs, exist_ok=True)
     data = issues()
+    # une issue fermee "not planned" sort du perimetre : elle ne doit pas
+    # compter comme du travail fait.
+    abandonnees = {i["number"] for i in data if i.get("stateReason") == "NOT_PLANNED"}
 
     for cfg in CHARTS:
-        poids = poids_par_issue(cfg["lots"])
+        tous = poids_par_issue(cfg["lots"])
+        poids = {n: p for n, p in tous.items() if n not in abandonnees}
+        abandon = sum(tous.values()) - sum(poids.values())
         total, serie = serie_reelle(data, poids, cfg["start"], cfg["end"])
 
         svg_path = os.path.join(docs, cfg["nom"] + ".svg")
         png_path = os.path.join(docs, cfg["nom"] + ".png")
         with open(svg_path, "w", encoding="utf-8") as f:
-            f.write(svg(cfg, total, serie))
+            f.write(svg(cfg, total, serie, abandon))
         ok = en_png(svg_path, png_path)
 
         reste = serie[-1][1] if serie else total
-        print(f"docs/{cfg['nom']}.svg écrit — reste {reste:.1f} h sur {total:g} h")
+        print(f"docs/{cfg['nom']}.svg écrit — reste {reste:.1f} h sur {total:.1f} h")
         if ok:
             print(f"docs/{cfg['nom']}.png écrit")
 
