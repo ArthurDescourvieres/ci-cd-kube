@@ -1,4 +1,5 @@
 FROM node:22-alpine AS base
+RUN apk upgrade --no-cache && npm install -g npm@11.19.1
 
 WORKDIR /app
 
