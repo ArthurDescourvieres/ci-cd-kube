@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="920" height="520" viewBox="0 0 920 520" font-family="Segoe UI, Helvetica, Arial, sans-serif">
 <rect width="920" height="520" fill="#ffffff"/>
 <text x="62" y="30" font-size="19" font-weight="600" fill="#1f2328">Burn down — CI-CD Kube</text>
-<text x="62" y="50" font-size="12.5" fill="#656d76">20.1 h faites sur 22.4 h · 2.2 h restantes · 5 jours avant la soutenance · 0.6 h abandonnées</text>
+<text x="62" y="50" font-size="12.5" fill="#656d76">20.1 h faites sur 22.4 h · 2.2 h restantes · 4 jours avant la soutenance · 0.6 h abandonnées</text>
 <line x1="62" y1="442.0" x2="896" y2="442.0" stroke="#d8dee4" stroke-width="1"/>
 <text x="52" y="446.0" font-size="11.5" fill="#656d76" text-anchor="end">0 h</text>
 <line x1="62" y1="357.5" x2="896" y2="357.5" stroke="#d8dee4" stroke-width="1"/>
@@ -49,8 +49,8 @@
 <line x1="896.0" y1="64" x2="896.0" y2="442" stroke="#d8dee4" stroke-width="1"/>
 <text x="896.0" y="460" font-size="10.5" fill="#656d76" text-anchor="middle">15/09</text>
 <line x1="62.0" y1="64.0" x2="896.0" y2="442.0" stroke="#8c959f" stroke-width="2" stroke-dasharray="6 5"/>
-<polyline points="62.0,64.0 121.6,64.0 121.6,209.0 181.1,209.0 181.1,298.4 240.7,298.4 240.7,321.6 300.3,321.6 300.3,353.3 359.9,353.3 359.9,353.3 419.4,353.3 419.4,353.3 479.0,353.3 479.0,404.0 538.6,404.0 538.6,404.0 598.1,404.0 598.1,404.0 598.1,404.0 598.1,404.0" fill="none" stroke="#1a7f37" stroke-width="2.5" stroke-linejoin="round"/>
-<circle cx="598.1" cy="404.0" r="4.5" fill="#1a7f37"/>
+<polyline points="62.0,64.0 121.6,64.0 121.6,209.0 181.1,209.0 181.1,298.4 240.7,298.4 240.7,321.6 300.3,321.6 300.3,353.3 359.9,353.3 359.9,353.3 419.4,353.3 419.4,353.3 479.0,353.3 479.0,404.0 538.6,404.0 538.6,404.0 598.1,404.0 598.1,404.0 657.7,404.0 657.7,404.0 657.7,404.0 657.7,404.0" fill="none" stroke="#1a7f37" stroke-width="2.5" stroke-linejoin="round"/>
+<circle cx="657.7" cy="404.0" r="4.5" fill="#1a7f37"/>
 <line x1="62" y1="494" x2="88" y2="494" stroke="#8c959f" stroke-width="2" stroke-dasharray="6 5"/>
 <text x="96" y="498" font-size="12" fill="#656d76">idéal (rythme constant jusqu'au 15/09)</text>
 <line x1="342" y1="494" x2="368" y2="494" stroke="#1a7f37" stroke-width="2.5"/>
