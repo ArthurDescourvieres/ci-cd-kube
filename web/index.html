@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Notes — CI-CD Kube</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main>
+      <h1>Notes</h1>
+
+      <form id="note-form">
+        <label for="title">Titre</label>
+        <input id="title" name="title" required autocomplete="off" />
+
+        <label for="content">Contenu</label>
+        <textarea id="content" name="content" rows="3"></textarea>
+
+        <button type="submit">Ajouter</button>
+      </form>
+
+      <p id="empty" hidden>Aucune note pour le moment.</p>
+
+      <ul id="notes"></ul>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>

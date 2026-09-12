@@ -1,5 +1,5 @@
 services:
-  app:
+  api:
     build:
       context: .
       target: dev
@@ -10,3 +10,21 @@ services:
       - ./tests:/app/tests
     environment:
       APP_VERSION: local
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  web:
+    build: ./web
+    ports:
+      - "8080:80"
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1/"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
