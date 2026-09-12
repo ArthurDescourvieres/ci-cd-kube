@@ -24,3 +24,7 @@ Thumbs.db
 
 # Documents fournis par l'ecole : le PDF reste local
 *.pdf
+
+# Sorties Playwright
+test-results/
+playwright-report/

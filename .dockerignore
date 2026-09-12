@@ -8,6 +8,9 @@ npm-debug.log
 
 k8s
 docs
+web
+test-results
+playwright-report
 
 *.md
 compose.yaml

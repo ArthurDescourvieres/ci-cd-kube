@@ -8,4 +8,10 @@ export default [
       globals: globals.node,
     },
   },
+  {
+    files: ['web/**/*.js'],
+    languageOptions: {
+      globals: globals.browser,
+    },
+  },
 ]
