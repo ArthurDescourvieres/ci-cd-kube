@@ -23,26 +23,57 @@ n'est pas publiée.
 
 ## L'application
 
-Une API Express minimale :
+Trois services : un front nginx qui sert des fichiers statiques et proxifie
+`/api/`, une API Express, et une base PostgreSQL.
 
-| Fichier         | Rôle                                                    |
-| --------------- | ------------------------------------------------------- |
-| `src/app.js`    | déclare les routes et **exporte** l'app sans l'écouter  |
-| `src/server.js` | importe l'app et appelle `listen()`                     |
+| Fichier         | Rôle                                                     |
+| --------------- | -------------------------------------------------------- |
+| `src/app.js`    | déclare les routes et **exporte** l'app sans l'écouter    |
+| `src/server.js` | applique le schéma puis appelle `listen()`                |
+| `src/db.js`     | pool `pg` construit depuis `DATABASE_URL`                 |
+| `src/notes.js`  | les cinq routes REST de la ressource `notes`              |
+| `db/schema.sql` | la table `notes`, rejouée à chaque démarrage              |
+| `web/`          | page statique, `nginx.conf` et son image                  |
 
 Cette séparation permet de tester les routes sans ouvrir de port.
 
-Deux routes : `GET /` renvoie un message et une version, `GET /health` renvoie
-`{ "status": "ok" }` 
+| Route             | Rôle                                                     |
+| ----------------- | -------------------------------------------------------- |
+| `GET /`           | message et version                                        |
+| `GET /health`     | liveness — ne touche **pas** à la base                    |
+| `GET /ready`      | readiness — vérifie que la base répond                    |
+| `/api/notes`      | CRUD complet, requêtes paramétrées (`$1`)                 |
+
+`/health` et `/ready` sont séparés délibérément : une liveness probe qui teste
+la base ferait redémarrer en boucle des pods d'API en parfaite santé le jour où
+la base tombe. La readiness, elle, retire le pod du service sans le tuer.
+
+**L'état vit dans PostgreSQL, jamais dans l'API.** C'est ce qui rend les
+répliques interchangeables : elles ne se parlent pas, elles partagent une base.
+
+### Les trois niveaux de tests
+
+| Niveau       | Commande               | Ce qu'il attrape                            |
+| ------------ | ---------------------- | ------------------------------------------- |
+| unitaire     | `npm test`             | les routes sans base ni port                |
+| intégration  | `npm run test:integration` | le SQL réel, contre un vrai PostgreSQL  |
+| E2E          | `npm run test:e2e`     | nginx, le JS du navigateur, le câblage       |
+
+L'E2E rejoue le même scénario sur **chromium, firefox et webkit**.
 
 ## Structure du dépôt
 
 ```
 .github/workflows/ci-cd.yml   pipeline complete, quatre jobs
-tests/                        tests Vitest + Supertest
+tests/                        tests unitaires Vitest + Supertest
+tests/integration/            tests d'integration, contre un vrai PostgreSQL
+tests/e2e/                    scenario Playwright, trois navigateurs
+playwright.config.js          projects chromium / firefox / webkit
 Dockerfile                    multi-stage, targets dev et prod
-compose.yaml                  confort local pour bind mounting, hors pipeline
-k8s/deployment.yaml           replicas, resources, probes
+web/Dockerfile                image nginx du frontend
+compose.yaml                  stack locale a trois services : web, api, db
+k8s/deployment.yaml           replicas, resources, probes, DATABASE_URL
+k8s/postgres.yaml             base temporaire (emptyDir) + service ClusterIP
 k8s/service.yaml              ClusterIP, port 80 -> 3000
 k8s/ingress.yaml              hote public, TLS Let's Encrypt
 docs/                         schema de pipeline, burn down
@@ -156,19 +187,32 @@ contrôleur ingress-nginx et cert-manager.
 ```bash
 npm ci
 npm test
-npm run dev
 ```
 
-**2. Avec Docker**
+**2. Avec Docker** — la stack complete, front compris, sur <http://localhost:8080>
 
 ```bash
-docker compose up --build
+docker compose up --build -d --wait
 ```
+
+Les tests qui ont besoin d'une base tapent sur le PostgreSQL de la stack :
+
+```bash
+DATABASE_URL=postgres://notes:notes@localhost:55432/notes npm run test:integration
+npm run test:e2e
+```
+
+Le port 55432 evite le PostgreSQL local d'un poste de developpement, qui occupe
+souvent 5432. Le mot de passe par defaut vient de `.env.example` ; en production
+il vient d'un Secret.
 
 **3. Sur le cluster**
 
+Le Secret est cree a la main, hors du depot — aucun mot de passe dans `k8s/` :
+
 ```bash
 kubectl create namespace ci-cd-kube
+kubectl create secret generic ci-cd-kube-db -n ci-cd-kube   --from-literal=password='<mot-de-passe>'   --from-literal=url='postgres://notes:<mot-de-passe>@ci-cd-kube-db:5432/notes'
 kubectl apply -f k8s/ -n ci-cd-kube
 kubectl get pods -n ci-cd-kube
 ```

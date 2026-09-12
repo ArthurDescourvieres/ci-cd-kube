@@ -1,0 +1,76 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ci-cd-kube-db
+  namespace: ci-cd-kube
+  labels:
+    app: ci-cd-kube-db
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: ci-cd-kube-db
+  template:
+    metadata:
+      labels:
+        app: ci-cd-kube-db
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:17-alpine
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_DB
+              value: notes
+            - name: POSTGRES_USER
+              value: notes
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: ci-cd-kube-db
+                  key: password
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          readinessProbe:
+            exec:
+              command: ["pg_isready", "-U", "notes", "-d", "notes"]
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          livenessProbe:
+            exec:
+              command: ["pg_isready", "-U", "notes", "-d", "notes"]
+            initialDelaySeconds: 15
+            periodSeconds: 10
+      volumes:
+        - name: data
+          emptyDir: {}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ci-cd-kube-db
+  namespace: ci-cd-kube
+  labels:
+    app: ci-cd-kube-db
+spec:
+  type: ClusterIP
+  selector:
+    app: ci-cd-kube-db
+  ports:
+    - name: postgres
+      port: 5432
+      targetPort: 5432

@@ -1,4 +1,18 @@
 services:
+  db:
+    image: postgres:17-alpine
+    ports:
+      - "55432:5432"
+    environment:
+      POSTGRES_DB: notes
+      POSTGRES_USER: notes
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-notes}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U notes -d notes"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
   api:
     build:
       context: .
@@ -10,8 +24,12 @@ services:
       - ./tests:/app/tests
     environment:
       APP_VERSION: local
+      DATABASE_URL: postgres://notes:${POSTGRES_PASSWORD:-notes}@db:5432/notes
+    depends_on:
+      db:
+        condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:3000/health"]
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/ready"]
       interval: 5s
       timeout: 3s
       retries: 10

@@ -1,10 +1,16 @@
-import { DatabaseSync } from 'node:sqlite'
+import pg from 'pg'
 import { readFileSync } from 'node:fs'
 
 const schema = readFileSync(new URL('../db/schema.sql', import.meta.url), 'utf8')
 
-const db = new DatabaseSync(process.env.DATABASE_FILE ?? ':memory:')
+const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL })
 
-db.exec(schema)
+pool.on('error', (error) => {
+  console.error('database pool error:', error.message)
+})
 
-export default db
+export async function init() {
+  await pool.query(schema)
+}
+
+export default pool
