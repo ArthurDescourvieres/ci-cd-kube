@@ -29,6 +29,39 @@ jobs:
       - run: npm run lint
       - run: npm test
 
+  integration:
+    name: CI integration tests
+    needs: test
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: notes
+          POSTGRES_USER: notes
+          POSTGRES_PASSWORD: notes
+        options: >-
+          --health-cmd "pg_isready -U notes -d notes"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+        ports:
+          - 5432:5432
+    env:
+      DATABASE_URL: postgres://notes:notes@localhost:5432/notes
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+      - run: npm run test:integration
+
   e2e:
     name: CI end-to-end tests
     needs: test
@@ -61,7 +94,7 @@ jobs:
 
   build:
     name: CI Docker image
-    needs: test
+    needs: [test, integration]
     runs-on: ubuntu-24.04
     if: github.event_name == 'push'
     permissions:
@@ -118,7 +151,7 @@ jobs:
 
   notify:
     name: CI Google Chat notification
-    needs: [test, e2e, build, scan, deploy]
+    needs: [test, integration, e2e, build, scan, deploy]
     runs-on: ubuntu-24.04
     if: always() && github.event_name == 'push'
     permissions:

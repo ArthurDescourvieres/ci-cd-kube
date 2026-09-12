@@ -20,6 +20,12 @@ spec:
           image: ghcr.io/arthurdescourvieres/ci-cd-kube:sha-57aaf29
           ports:
             - containerPort: 3000
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: ci-cd-kube-db
+                  key: url
           resources:
             requests:
               cpu: 50m
@@ -35,7 +41,7 @@ spec:
             periodSeconds: 10
           readinessProbe:
             httpGet:
-              path: /health
+              path: /ready
               port: 3000
             initialDelaySeconds: 2
             periodSeconds: 5

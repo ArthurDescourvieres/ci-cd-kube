@@ -3,60 +3,60 @@ import db from './db.js'
 
 const router = Router()
 
-router.get('/', (req, res) => {
-  const notes = db.prepare('SELECT * FROM notes ORDER BY id DESC').all()
+router.get('/', async (req, res) => {
+  const { rows } = await db.query('SELECT * FROM notes ORDER BY id DESC')
 
-  res.json(notes)
+  res.json(rows)
 })
 
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   const { title, content } = req.body
 
   if (!title) {
     return res.status(400).json({ error: 'title is required' })
   }
 
-  const { lastInsertRowid } = db
-    .prepare('INSERT INTO notes (title, content) VALUES (?, ?)')
-    .run(title, content ?? '')
+  const { rows } = await db.query(
+    'INSERT INTO notes (title, content) VALUES ($1, $2) RETURNING *',
+    [title, content ?? ''],
+  )
 
-  const note = db.prepare('SELECT * FROM notes WHERE id = ?').get(lastInsertRowid)
-
-  res.status(201).json(note)
+  res.status(201).json(rows[0])
 })
 
-router.get('/:id', (req, res) => {
-  const note = db.prepare('SELECT * FROM notes WHERE id = ?').get(req.params.id)
+router.get('/:id', async (req, res) => {
+  const { rows } = await db.query('SELECT * FROM notes WHERE id = $1', [req.params.id])
 
-  if (!note) {
+  if (rows.length === 0) {
     return res.status(404).json({ error: 'note not found' })
   }
 
-  res.json(note)
+  res.json(rows[0])
 })
 
-router.put('/:id', (req, res) => {
+router.put('/:id', async (req, res) => {
   const { title, content } = req.body
 
   if (!title) {
     return res.status(400).json({ error: 'title is required' })
   }
 
-  const { changes } = db
-    .prepare('UPDATE notes SET title = ?, content = ? WHERE id = ?')
-    .run(title, content ?? '', req.params.id)
+  const { rows } = await db.query(
+    'UPDATE notes SET title = $1, content = $2 WHERE id = $3 RETURNING *',
+    [title, content ?? '', req.params.id],
+  )
 
-  if (changes === 0) {
+  if (rows.length === 0) {
     return res.status(404).json({ error: 'note not found' })
   }
 
-  res.json(db.prepare('SELECT * FROM notes WHERE id = ?').get(req.params.id))
+  res.json(rows[0])
 })
 
-router.delete('/:id', (req, res) => {
-  const { changes } = db.prepare('DELETE FROM notes WHERE id = ?').run(req.params.id)
+router.delete('/:id', async (req, res) => {
+  const { rowCount } = await db.query('DELETE FROM notes WHERE id = $1', [req.params.id])
 
-  if (changes === 0) {
+  if (rowCount === 0) {
     return res.status(404).json({ error: 'note not found' })
   }
 
