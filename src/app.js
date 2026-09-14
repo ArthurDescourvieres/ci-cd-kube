@@ -8,7 +8,7 @@ app.use(express.json())
 
 app.get('/', (req, res) => {
       res.json({
-            message: 'CI-CD Kube - Présentation',
+            message: 'Soutenance M2 - Arthur',
             version: process.env.APP_VERSION ?? 'dev',
       })
 })

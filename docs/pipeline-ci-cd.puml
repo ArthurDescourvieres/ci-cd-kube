@@ -37,21 +37,25 @@ pour ne pas consommer de minutes sur de la documentation);
 :<b>job test</b> [CI]
 Checkout + setup-node 22 (cache npm)
 npm ci (versions figees par package-lock.json)
+npm audit --audit-level=high
+npm run lint (eslint)
 npm test (vitest run + supertest);
 
 if (Tests verts ?) then (oui)
 else (non)
   |Google Chat|
   :<b>job notify</b> (if: always())
-  Notification FAILURE
-  build et deploy ne demarrent jamais;
+  Notification FAILURE, avec le nom du job fautif
+  Les six autres jobs ne demarrent jamais;
   stop
 endif
 
-' Le job test est le gate : tout ce qui suit declare `needs: test`.
+' Le job test est le gate : les six autres jobs declarent `needs: test`,
+' directement ou par transitivite.
 |GitHub Actions - runner ubuntu-24.04|
 if (Evenement declencheur ?) then (pull_request)
-  :<b>build et deploy sont ignores</b>
+  :<b>integration et e2e s'executent,</b>
+  <b>build, scan, deploy et notify sont ignores</b>
   (if: github.event_name == 'push')
   Une proposition de code est testee,
   ni construite ni deployee;
@@ -64,31 +68,66 @@ if (Evenement declencheur ?) then (pull_request)
 else (push)
 endif
 
-' ============================================================
-'  CD / DELIVERY - production d'un artefact deployable
-' ============================================================
-:<b>job build</b> (needs: test) [CD - Delivery]
-Login GHCR avec le GITHUB_TOKEN du run
-(permissions: packages: write, declarees
-au niveau du job et non du workflow);
+' Deux branches partent de `test` et ne se rejoignent qu'au deploiement :
+' `build` attend `integration`, jamais `e2e`.
+fork
+  :<b>job integration</b> (needs: test) [CI]
+  Service postgres:17-alpine dans le runner
+  (options de healthcheck pg_isready)
+  npm run test:integration contre un vrai SQL;
 
-if (Reference poussee ?) then (refs/heads/main)
-  :docker build --target <b>dev</b>
-  Tags image : :dev et :sha-<sha-court>;
-else (refs/tags/vX.Y.Z)
-  :docker build --target <b>prod</b>
-  npm ci --omit=dev, USER node
-  Tags image : :X.Y.Z et :latest;
-endif
+  ' ==========================================================
+  '  CD / DELIVERY - production d'un artefact deployable
+  ' ==========================================================
+  :<b>job build</b> (needs: [test, integration]) [CD - Delivery]
+  Login GHCR avec le GITHUB_TOKEN du run
+  (permissions: packages: write, declarees
+  au niveau du job et non du workflow);
 
-:docker push sur ghcr.io;
-note right
-  ==== FRONTIERE CI / CD ====
-  Avant : on manipule du code source.
-  Apres : on ne manipule plus que le
-  tag d'une image immuable. C'est le
-  seul lien entre les deux moities.
-end note
+  if (Reference poussee ?) then (refs/heads/main)
+    :docker build --target <b>dev</b>
+    Tags image : :dev et :sha-<sha-court>;
+  else (refs/tags/vX.Y.Z)
+    :docker build --target <b>prod</b>
+    npm ci --omit=dev, USER node
+    Tags image : :X.Y.Z et :latest;
+  endif
+
+  :docker push sur ghcr.io;
+  note right
+    ==== FRONTIERE CI / CD ====
+    Avant : on manipule du code source.
+    Apres : on ne manipule plus que le
+    tag d'une image immuable. C'est le
+    seul lien entre les deux moities.
+  end note
+
+  :<b>job scan</b> (needs: build) [CD - Delivery]
+  Trivy sur l'image qui vient d'etre publiee
+  severity HIGH et CRITICAL, ignore-unfixed
+  exit-code 1 : le job echoue s'il trouve;
+  note right
+    L'action est epinglee par le <b>SHA</b> de son
+    commit, pas par son tag : un tag Git se
+    deplace, un SHA non. Ce job n'a que
+    contents: read, il ne voit donc pas les
+    identifiants GHCR laisses par build.
+    Le gate bloque le <b>deploiement</b>, pas la
+    <b>publication</b> : l'image est deja sur GHCR.
+  end note
+fork again
+  :<b>job e2e</b> (needs: test) [CI]
+  docker compose up -d ~--build ~--wait
+  Playwright sur chromium, firefox et webkit
+  (fail-fast: false, trace en artefact si echec);
+  note right
+    e2e ne depend que de test : il construit
+    ses propres images avec compose et n'a pas
+    besoin de l'image publiee. Il tourne donc
+    en parallele de build et de scan, et les
+    rejoint seulement a l'entree de deploy.
+  end note
+end fork
 
 if (Reference poussee ?) then (refs/tags/vX.Y.Z)
   :<b>job deploy ignore</b>
@@ -106,12 +145,12 @@ endif
 '  CD / DEPLOYMENT - installation automatique sur le cluster
 ' ============================================================
 |GitHub Actions - runner ubuntu-24.04|
-:<b>job deploy</b> (needs: build) [CD - Deployment]
+:<b>job deploy</b> (needs: [scan, e2e]) [CD - Deployment]
 Ecriture de ~/.kube/config depuis le
 secret KUBE_CONFIG, puis chmod 600;
 note right
   L'API du cluster est joignable depuis
-  Internet : un runner GitHub hebergé
+  Internet : un runner GitHub heberge
   suffit, aucun runner self-hosted.
   Le runner est detruit apres le job,
   le kubeconfig en clair avec lui.
@@ -161,18 +200,27 @@ etudiant-01-ci-cd.development.atelier.ovh
 HTTPS delivre par cert-manager;
 
 |Google Chat|
-:<b>job notify</b> (needs: [test, build, deploy], if: always())
+:<b>job notify</b>
+(needs: [test, integration, e2e, build, scan, deploy], if: always())
 Notification SUCCESS
-(statut, commit, auteur, lien vers le run);
+(statut, commit, auteur, PR liee, lien vers le run);
+note right
+  always() le fait demarrer quel que soit
+  l'etat des autres ; le needs: lui donne le
+  droit de <b>lire</b> leur resultat. Sans deploy
+  dans cette liste, un deploiement en echec
+  serait annonce comme un succes.
+end note
 stop
 
 legend right
   <b>Lecture du schema</b>
   --
-  <b>[CI]</b> Integration continue : job test.
-     Valide LE CODE. Gate : si rouge, rien n'est construit.
-  <b>[CD - Delivery]</b> job build. Produit et publie un
-     ARTEFACT immuable sur GHCR.
+  <b>[CI]</b> Integration continue : jobs test, integration et e2e.
+     Valident LE CODE a trois niveaux. test est le gate :
+     s'il est rouge, rien n'est construit.
+  <b>[CD - Delivery]</b> jobs build et scan. Produisent, publient
+     puis verifient un ARTEFACT immuable sur GHCR.
   <b>[CD - Deployment]</b> job deploy. Installe l'artefact
      sur le cluster sans intervention humaine.
   <b>[transverse]</b> job notify. Ni CI ni CD :

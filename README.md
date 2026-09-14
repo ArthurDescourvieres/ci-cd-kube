@@ -17,9 +17,10 @@ pipeline et la configuration Kubernetes.
 Diagramme d'activité complet : [`docs/pipeline-ci-cd.png`](docs/pipeline-ci-cd.png)
 (source PlantUML : [`docs/pipeline-ci-cd.puml`](docs/pipeline-ci-cd.puml)).
 
-Les quatre jobs sont chaînés entre eux grâce à `needs:` : `test` est un verrou,
+Les sept jobs sont chaînés entre eux grâce à `needs:` : `test` est un verrou,
 rien n'est construit si les tests échouent, et rien n'est déployé si l'image
-n'est pas publiée.
+n'est pas publiée puis scannée. Le détail de ces dépendances, et ce qu'un échec
+entraîne job par job, est dans [Le graphe des jobs](#le-graphe-des-jobs).
 
 ## L'application
 
@@ -64,7 +65,7 @@ L'E2E rejoue le même scénario sur **chromium, firefox et webkit**.
 ## Structure du dépôt
 
 ```
-.github/workflows/ci-cd.yml   pipeline complete, quatre jobs
+.github/workflows/ci-cd.yml   pipeline complete, sept jobs
 tests/                        tests unitaires Vitest + Supertest
 tests/integration/            tests d'integration, contre un vrai PostgreSQL
 tests/e2e/                    scenario Playwright, trois navigateurs
@@ -81,6 +82,49 @@ scripts/burndown.py           outillage de suivi, lit les issues GitHub
 ```
 
 ## La pipeline
+
+### Le graphe des jobs
+
+Les `needs:` du workflow forment un graphe orienté : chaque job attend ceux dont
+il dépend, et un job dont une dépendance échoue n'est pas interrompu — il n'est
+jamais démarré.
+
+```mermaid
+flowchart LR
+  test --> integration
+  test --> e2e["e2e · 3 navigateurs"]
+  test --> build
+  integration --> build
+  build --> scan
+  scan --> deploy
+  e2e --> deploy
+```
+
+`e2e` ne dépend que de `test` : il tourne en parallèle de `build` parce qu'il
+construit ses propres images avec `compose` et n'a pas besoin de l'image
+publiée. Il rejoint la chaîne au niveau de `deploy`.
+
+`notify` ne figure pas sur le graphe : il déclare `if: always()` **et** un
+`needs:` sur les six autres jobs. Les deux sont nécessaires — `always()` le fait
+démarrer quel que soit l'état des autres, le `needs:` lui donne le droit de lire
+leur résultat. Sans `deploy` dans cette liste, un déploiement en échec serait
+annoncé comme un succès.
+
+### Ce qu'un échec entraîne
+
+| Job en échec | Tourne quand même | Jamais démarrés | Conséquence |
+|---|---|---|---|
+| `test` | — | tous | aucune image construite |
+| `integration` | `e2e` | `build`, `scan`, `deploy` | aucune image publiée |
+| `e2e` | `build`, `scan` | `deploy` | l'image est publiée, le cluster n'est pas mis à jour |
+| `build` | `e2e` | `scan`, `deploy` | rien publié |
+| `scan` | `e2e` | `deploy` | l'image vulnérable est déjà publiée, cluster inchangé |
+| `deploy` | — | — | `rollout status` a échoué : les anciens pods servent toujours |
+| `notify` | — | — | le déploiement a eu lieu sans que personne soit prévenu |
+
+Deux lignes de ce tableau disent la même chose : la chaîne protège le
+**déploiement**, pas la **publication**. Ni l'E2E ni le scan Trivy n'empêchent
+le push sur GHCR — voir [Choix assumés](#choix-assumés).
 
 ### Les déclencheurs
 

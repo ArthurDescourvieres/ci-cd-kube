@@ -120,14 +120,18 @@ def svg(cfg, total, serie, abandon=0.0, reporte=0.0):
     ]
 
     reste = serie[-1][1] if serie else total
+    reste = abs(reste) if round(reste, 1) == 0 else reste  # evite un "-0.0 h"
     fait = total - reste
     jours = (end - date.today()).days
+    # l'echeance passee ne se compte pas en jours negatifs
+    delai = (f'{jours} jour{"s" if jours > 1 else ""} avant {cfg["echeance"]}'
+             if jours > 0 else f'{cfg["echeance"]} passé')
     retire = ((f' · {abandon:.1f} h abandonnées' if abandon else '')
               + (f' · {reporte:.1f} h reportées' if reporte else ''))
     s.append(
         f'<text x="{M["l"]}" y="50" font-size="12.5" fill="{MUTED}">'
         f'{fait:.1f} h faites sur {total:.1f} h · {reste:.1f} h restantes · '
-        f'{jours} jours avant {cfg["echeance"]}{retire}</text>'
+        f'{delai}{retire}</text>'
     )
 
     pas = 5
